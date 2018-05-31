@@ -47,7 +47,7 @@ function! ShowTerminal(term)
   endfor
 
   if bufnr(a:term) == -1
-    let l:program = get(b:,'terminal_program',g:terminal_program)
+    let l:program = get(b:,'repl_program',g:repl_program)
     call term_start(l:program,{ 
           \ "hidden": 1,
           \ "norestore": 1,
@@ -60,7 +60,7 @@ function! ShowTerminal(term)
 
   if empty(win_findbuf(bufnr(a:term)))
     execute ":botright sb" . bufnr(a:term)
-    execute ":resize " . g:terminal_size
+    execute ":resize " . g:repl_size
     call setbufvar(bufnr(a:term),'&buflisted',0)
   endif
 endfunction
