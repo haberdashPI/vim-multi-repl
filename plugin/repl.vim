@@ -122,7 +122,9 @@ tnoremap <silent><Plug>(repl-resize) <C-w>:execute ":resize " . g:repl_size<cr>
 vnoremap <silent><Plug>(repl-send-text) mr"ty:call TermSendText(@t)<cr>`r
 
 if g:repl_default_mappings == 1
-  map <Leader>t <Plug>(repl-toggle)
+  nmap <Leader>t <Plug>(repl-toggle)
+  tmap <Leader>t <Plug>(repl-toggle)
+
   nmap <Leader>. <Plug>(repl-send-text)
   nmap <Leader>cd <Plug>(repl-cd)
   nmap <Leader>r <Plug>(repl-run)
