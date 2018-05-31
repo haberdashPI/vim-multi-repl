@@ -18,7 +18,9 @@ The available commands are:
 The default mappings are as follows
 
 ```vim
-map <Leader>t <Plug>(repl-toggle)
+nmap <Leader>t <Plug>(repl-toggle)
+tmap <Leader>t <Plug>(repl-toggle)
+
 nmap <Leader>. <Plug>(repl-send-text)
 nmap <Leader>cd <Plug>(repl-cd)
 nmap <Leader>r <Plug>(repl-run)
@@ -27,8 +29,13 @@ tmap <C-w><C-u> <C-w>N<C-u>:set nonumber<cr>
 vmap <silent><Leader>. <Plug>(repl-send-text)
 ```
 
+If you wish to remove these mappings you can add `let g:repl_default_mappings=0`
+to `.vimrc`.
+
 By default cd and run assume you are operating in a standard unix shell.
-However, you can easily configure cd and run for your specific language as follows:
+However, you can easily configure cd and run for your specific language.
+For example, to configure the command for the [Julia](https://julialang.org/)
+language you could do the following:
 
 ```vim
 augroup Julia
