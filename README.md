@@ -33,7 +33,7 @@ However, you can easily configure cd and run for your specific language as follo
 ```vim
 augroup Julia
   au!
-  au FileType julia let b:terminal_program='julia'
+  au FileType julia let b:repl_program='julia'
   au FileType julia let b:cd_prefix='cd("'
   au FileType julia let b:cd_suffix='")'
   au FileType julia let b:run_suffix='include("'
