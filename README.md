@@ -104,11 +104,5 @@ that indicates the REPL you wish to start and the default is determined
 by the last REPL used in the current buffer.
 
 ## TODO:
-1. instead of the shell command, createa :repl [command], and a
-   <Leader>gsh command to send cd 'file'
-1. create command to list all REPLs for a project or filetype
-2. add prefixs for sending text (e.g. for ipython)
-3. Move language customizations form vimrc to this package
-4. create an operator
-5. make the location of the REPL configuraable
-6. make it possible to resize the REPL when not in the REPL
+1. create an operator
+2. make the location of the REPL configuraable
