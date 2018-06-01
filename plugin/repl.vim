@@ -9,16 +9,19 @@ endif
 let loaded_vimrepl = 1
 
 if version < 800
-  echom "vim-repl requires Vim 8"
+  echoer "vim-repl requires Vim 8"
   finish
 end
 
 let g:repl_size = get(g:,'repl_size',20)
 let g:repl_default_mappings= get(g:,'repl_default_mappings',1)
-let g:cd_prefix = get(g:,'cd_prefix','cd ')
-let g:cd_suffix = get(g:,'cd_suffix','')
-let g:run_prefix = get(g:,'run_prefix','')
-let g:run_suffix = get(g:,'run_suffix','')
+let g:repl_cd_prefix = get(g:,'repl_cd_prefix','cd ')
+let g:repl_cd_suffix = get(g:,'repl_cd_suffix','')
+let g:repl_run_prefix = get(g:,'repl_run_prefix','')
+let g:repl_run_suffix = get(g:,'repl_run_suffix','')
+let g:repl_send_prefix = get(g:,'repl_send_prefix','')
+let g:repl_send_suffix = get(g:,'repl_send_suffix','')
+let g:repl_send_text_delay = get(g:,'repl_send_text_delay','0m')
 
 if has('win32')
   let g:repl_program = get(g:,'repl_program','sh.exe')
@@ -27,11 +30,9 @@ else
 end
 
 " choose a project and filetype specific name for the terminal
-function! TerminalName(count)
-  echom "Count " . a:count
+function s:TerminalName(count)
   let l:count = a:count > 0 ? a:count : get(b:,'last_repl_count',1)
   let b:last_repl_count = l:count
-  echom "Chosen count " . l:count
   let l:projdir = projectroot#get(expand('%'))
   if len(l:projdir) > 0
     let l:name = "term:" . fnamemodify(l:projdir,':t') . ":" . &filetype
@@ -46,7 +47,7 @@ function! TerminalName(count)
 endfunction
 
 " show the terminal, creating it if necessary
-function! ShowTerminal(term,count,use_shell)
+function s:ShowTerminal(term,count,program,start_only)
   let l:dir = resolve(expand('%:p:h'))
 
   for i in range(1,bufnr('$'))
@@ -61,23 +62,16 @@ function! ShowTerminal(term,count,use_shell)
   endfor
 
   if bufnr(a:term) == -1
-    if a:use_shell == 1
-      let l:program = g:repl_program
-    else
-      let l:program = get(b:,'repl_program',g:repl_program)
-    end
-
-    call term_start(l:program,{ 
+    call term_start(a:program,{ 
+          \ "cwd": l:dir,
           \ "hidden": 1,
           \ "norestore": 1,
           \ "term_name": a:term,
           \ "term_kill":  "term",
           \ "term_finish": "close"
           \ })
-    call setbufvar(bufnr(a:term),'use_shell',a:use_shell)
-    call TermCd(l:dir,a:count)
-  elseif a:use_shell == 1
-    echom "Cannot start shell in already running REPL"
+  elseif a:start_only
+    echoer "Cannot start, already running a REPL."
   end
 
   " hide any other terminals
@@ -95,22 +89,42 @@ function! ShowTerminal(term,count,use_shell)
     execute ":botright sb" . bufnr(a:term)
     execute ":resize " . g:repl_size
     call setbufvar(bufnr(a:term),'&buflisted',0)
-    let b:use_shell = a:use_shell
   endif
 endfunction
 
 " switch to terminal (showing it if necessary) when not in a terminal,
 " hide the terminal and return to the buffer that opeend the terminal
 " if it's already the active window
-function! ToggleTerminal(count,...)
+function ToggleTerminal(...)
+  if a:0 > 0
+    if a:1 =~# '^\d\+$'
+      let l:count = a:1
+      if a:0 > 1
+        let l:program = join(a:000[1:-1]," ")
+        let l:custom_start = 1
+      else
+        let l:program = get(b:,'repl_program',g:repl_program)
+        let l:custom_start = 0
+      end
+    else
+      let l:count = 0
+      let l:program = join(a:000[0:-1]," ")
+      let l:custom_start = 1
+    end
+  else
+    let l:count = 0
+    let l:program = get(b:,'repl_program',g:repl_program)
+    let l:custom_start = 0
+  end
+
   let l:use_shell = a:0 > 0 ? a:1 : 0
   let l:buf = bufname("%")
   if empty(matchstr(l:buf,'term:.\+'))
-    let l:term = TerminalName(a:count)
-    call ShowTerminal(l:term,a:count,l:use_shell)
+    let l:term = s:TerminalName(l:count)
+    call s:ShowTerminal(l:term,l:count,l:program,l:custom_start)
     call win_gotoid(win_findbuf(bufnr(l:term))[0])
     let b:opened_from = l:buf
-  else
+  elseif !l:custom_start
     let l:gotowin = b:opened_from
     execute ":hide"
     let l:windows = win_findbuf(bufnr(l:gotowin))
@@ -120,7 +134,7 @@ function! ToggleTerminal(count,...)
   endif
 endfunction
 
-function! SwitchTerminal()
+function SwitchTerminal()
   let l:parts = split(bufname('%'),':')
   let l:root = bufname('%')
   if l:parts[-1] =~ '\d\+'
@@ -132,67 +146,121 @@ function! SwitchTerminal()
   else
     let l:term = l:root
   end
-  call ShowTerminal(l:term,l:num,0)
+  call s:ShowTerminal(l:term,l:num,get(b:,'repl_program',g:repl_program),0)
 endfunction
 
 " send a line to the terminal (showing it if necessary)
-function! TermSendText(text,count)
+function TermSendText(text,count,...)
   let l:buf = bufname("%")
   let l:win = win_getid()
+  let l:delay = get(b:,'repl_send_text_delay',g:repl_send_text_delay)
+  let l:prefix = get(b:,'repl_send_prefix',g:repl_send_prefix)
+  let l:suffix = get(b:,'repl_send_suffix',g:repl_send_suffix)
   if !empty(matchstr(l:buf,'term:\+'))
     echoer "Already in a terminal buffer." . 
           \ " Send text only works when focused on a text file."
   else
-    let l:term = TerminalName(a:count)
-    call ShowTerminal(l:term,a:count,0)
+    let l:term = s:TerminalName(a:count)
+    call s:ShowTerminal(l:term,a:count,get(b:,'repl_program',g:repl_program),0)
+    if a:0 > 0 && a:1 > 0
+      call term_sendkeys(bufnr(l:term),l:prefix."\n")
+      execute 'sleep ' . l:delay
+    end
+
     call term_sendkeys(bufnr(l:term),a:text . "\n")
+
+    if a:0 > 0 && a:1 > 0
+      call term_sendkeys(bufnr(l:term),l:suffix."\n")
+      execute 'sleep ' . l:delay
+    end
   endif
   call win_gotoid(l:win)
 endfunction
 
-function! TermCd(dir,count)
-  if !getbufvar(bufnr(TerminalName(a:count)),'use_shell',0)
-    let l:prefix = get(b:,'cd_prefix',g:cd_prefix)
-    let l:suffix = get(b:,'cd_suffix',g:cd_suffix)
+function TermCd(dir,count,global)
+  if !a:global
+    let l:prefix = get(b:,'repl_cd_prefix',g:repl_cd_prefix)
+    let l:suffix = get(b:,'repl_cd_suffix',g:repl_cd_suffix)
   else
-    let l:prefix = g:cd_prefix
-    let l:suffix = g:cd_suffix
+    let l:prefix = g:repl_cd_prefix
+    let l:suffix = g:repl_cd_suffix
   end
   call TermSendText(l:prefix . a:dir . l:suffix,a:count)
 endfunction
 
-function! TermRun(file,count)
-  if !getbufvar(bufnr(TerminalName(a:count)),'use_shell',0)
-    let l:prefix = get(b:,'run_prefix',g:run_prefix)
-    let l:suffix = get(b:,'run_suffix',g:run_suffix)
+function TermRun(file,count,global)
+  if !a:global
+    let l:prefix = get(b:,'repl_run_prefix',g:repl_run_prefix)
+    let l:suffix = get(b:,'repl_run_suffix',g:repl_run_suffix)
   else
-    let l:prefix = g:run_prefix
-    let l:suffix = g:run_suffix
+    let l:prefix = g:repl_run_prefix
+    let l:suffix = g:repl_run_suffix
   end
   call TermSendText(l:prefix . a:file . l:suffix,a:count)
 endfunction
 
-nnoremap <silent><Plug>(repl-send-text) :<C-u>call TermSendText(getline('.'),v:count)<cr>j
+" TODO: after testing that everything works as before
+" add a new command to run a custom repl and remove the shell command below
+
+command! -nargs=* -complete=shellcmd REPL :call ToggleTerminal(<f-args>)
+nnoremap <silent><Plug>(repl-send-text) :<C-u>call TermSendText(getline('.'),v:count,1)<cr>j
+vnoremap <silent><Plug>(repl-send-text) mr"ty:call TermSendText(@t,v:count,1)<cr>`r
 nnoremap <silent><Plug>(repl-toggle) :<C-u>call ToggleTerminal(v:count)<cr>
-nnoremap <silent><Plug>(repl-shell) :<C-u>call ToggleTerminal(v:count,1)<cr>
-nnoremap <silent><Plug>(repl-cd) :<C-u>call TermCd(expand('%:p:h'),v:count)<cr>
-nnoremap <silent><Plug>(repl-run) :<C-u>call TermRun(resolve(expand('%:p')),v:count)<cr>
+nnoremap <silent><Plug>(repl-cd) :<C-u>call TermCd(expand('%:p:h'),v:count,0)<cr>
+nnoremap <silent><Plug>(repl-global-cd) :<C-u>call TermCd(expand('%:p:h'),v:count,1)<cr>
+nnoremap <silent><Plug>(repl-run) :<C-u>call TermRun(resolve(expand('%:p')),v:count,0)<cr>
+nnoremap <silent><Plug>(repl-resize) :<C-u>call ToggleTerminal()<cr><C-w>:execute ":resize " . g:repl_size<cr><C-w>p
+
 " TODO: add repl-resize for normal mode
 tnoremap <silent><Plug>(repl-toggle) <C-w>:call ToggleTerminal(0)<cr>
 tnoremap <silent><Plug>(repl-switch) <C-w>:call SwitchTerminal()<cr>
 tnoremap <silent><Plug>(repl-resize) <C-w>:execute ":resize " . g:repl_size<cr>
-vnoremap <silent><Plug>(repl-send-text) mr"ty:call TermSendText(@t,v:count)<cr>`r
 
 if g:repl_default_mappings == 1
-  nmap <Leader>sh <Plug>(repl-shell-toggle)
   nmap <Leader>' <Plug>(repl-toggle)
+  nmap <Leader>= <Plug>(repl-resize)
   tmap <C-w>' <Plug>(repl-toggle)
 
   nmap <Leader>. <Plug>(repl-send-text)
   nmap <Leader>cd <Plug>(repl-cd)
+  nmap <Leader>gcd <Plug>(repl-global-cd)
   nmap <Leader>r <Plug>(repl-run)
   tmap <C-w>= <Plug>(repl-resize)
   tmap <C-w>g <Plug>(repl-switch)
   tmap <C-w><C-u> <C-w>N<C-u>:set nonumber<cr>
   vmap <silent><Leader>. <Plug>(repl-send-text)
 end
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" language specific config
+au FileType javascript let b:repl_program='node'
+au FileType javascript let b:repl_cd_prefix='process.chdir("'
+au FileType javascript let b:repl_cd_suffix='")'
+au FileType javascript let b:repl_run_prefix='.load '
+au FileType javascript let b:repl_send_prefix=".editor\n"
+au FileType javascript let b:repl_send_suffix="\<c-d>"
+au FileType javascript let b:repl_send_text_delay='50m'
+
+au FileType r let b:repl_program='R'
+au FileType r let b:repl_cd_prefix='setwd("'
+au FileType r let b:repl_cd_suffix='")'
+au FileType r let b:repl_run_prefix='source("'
+au FileType r let b:repl_run_suffix='")'
+
+au FileType julia let b:repl_program='julia'
+au FileType julia let b:repl_cd_prefix='cd("'
+au FileType julia let b:repl_cd_suffix='")'
+au FileType julia let b:repl_run_prefix='include("'
+au FileType julia let b:repl_run_suffix='")'
+
+au FileType matlab let b:repl_program='matlab -nodesktop -nosplash'
+au FileType matlab let b:repl_cd_prefix='cd '
+au FileType matlab let b:repl_run_prefix='run('''
+au FileType matlab let b:repl_run_suffix=''')'
+
+au FileType python let b:repl_program='ipython'
+au FileType python let b:repl_cd_prefix='%cd '
+au FileType python let b:repl_run_prefix='%run '
+au FileType python let b:repl_send_text_delay='250m'
+au FileType python let b:repl_send_prefix="%cpaste\n"
+au FileType python let b:repl_send_suffix="\n--\n"
