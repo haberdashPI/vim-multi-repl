@@ -30,7 +30,7 @@ else
 end
 
 " choose a project and filetype specific name for the terminal
-function s:TerminalName(count)
+function s:REPLName(count)
   let l:count = a:count > 0 ? a:count : get(b:,'last_repl_count',1)
   let b:last_repl_count = l:count
   let l:projdir = projectroot#get(expand('%'))
@@ -47,7 +47,7 @@ function s:TerminalName(count)
 endfunction
 
 " show the terminal, creating it if necessary
-function s:ShowTerminal(term,count,program,start_only)
+function s:REPLShow(term,count,program,start_only)
   let l:dir = resolve(expand('%:p:h'))
 
   for i in range(1,bufnr('$'))
@@ -95,7 +95,7 @@ endfunction
 " switch to terminal (showing it if necessary) when not in a terminal,
 " hide the terminal and return to the buffer that opeend the terminal
 " if it's already the active window
-function ToggleTerminal(...)
+function REPLToggle(...)
   if a:0 > 0
     if a:1 =~# '^\d\+$'
       let l:count = a:1
@@ -120,21 +120,23 @@ function ToggleTerminal(...)
   let l:use_shell = a:0 > 0 ? a:1 : 0
   let l:buf = bufname("%")
   if empty(matchstr(l:buf,'term:.\+'))
-    let l:term = s:TerminalName(l:count)
-    call s:ShowTerminal(l:term,l:count,l:program,l:custom_start)
+    let l:term = s:REPLName(l:count)
+    call s:REPLShow(l:term,l:count,l:program,l:custom_start)
     call win_gotoid(win_findbuf(bufnr(l:term))[0])
     let b:opened_from = l:buf
   elseif !l:custom_start
-    let l:gotowin = b:opened_from
+    let l:gotowin = g(b:,'opened_from','')
     execute ":hide"
-    let l:windows = win_findbuf(bufnr(l:gotowin))
-    if !empty(l:windows)
-      call win_gotoid(l:windows[0])
-    end
+    if !empty(l:gotowin)
+      let l:windows = win_findbuf(bufnr(l:gotowin))
+      if !empty(l:windows)
+        call win_gotoid(l:windows[0])
+      endif
+    endif
   endif
 endfunction
 
-function SwitchTerminal()
+function REPLSwitch()
   let l:parts = split(bufname('%'),':')
   let l:root = bufname('%')
   if l:parts[-1] =~ '\d\+'
@@ -146,38 +148,43 @@ function SwitchTerminal()
   else
     let l:term = l:root
   end
-  call s:ShowTerminal(l:term,l:num,get(b:,'repl_program',g:repl_program),0)
+  call s:REPLShow(l:term,l:num,get(b:,'repl_program',g:repl_program),0)
 endfunction
 
 " send a line to the terminal (showing it if necessary)
-function TermSendText(text,count,...)
+function REPLSendText(text,count,...)
   let l:buf = bufname("%")
   let l:win = win_getid()
   let l:delay = get(b:,'repl_send_text_delay',g:repl_send_text_delay)
+
   let l:prefix = get(b:,'repl_send_prefix',g:repl_send_prefix)
   let l:suffix = get(b:,'repl_send_suffix',g:repl_send_suffix)
   if !empty(matchstr(l:buf,'term:\+'))
     echoer "Already in a terminal buffer." . 
           \ " Send text only works when focused on a text file."
   else
-    let l:term = s:TerminalName(a:count)
-    call s:ShowTerminal(l:term,a:count,get(b:,'repl_program',g:repl_program),0)
+    let l:term = s:REPLName(a:count)
+    call s:REPLShow(l:term,a:count,get(b:,'repl_program',g:repl_program),0)
     if a:0 > 0 && a:1 > 0
-      call term_sendkeys(bufnr(l:term),l:prefix."\n")
-      execute 'sleep ' . l:delay
+      call term_sendkeys(bufnr(l:term),l:prefix)
+      if l:delay !=# '0m'
+        execute 'sleep ' . l:delay
+      end
     end
 
     call term_sendkeys(bufnr(l:term),a:text . "\n")
 
     if a:0 > 0 && a:1 > 0
-      call term_sendkeys(bufnr(l:term),l:suffix."\n")
-      execute 'sleep ' . l:delay
+      call term_sendkeys(bufnr(l:term),l:suffix)
+      if l:delay !=# '0m'
+        execute 'sleep ' . l:delay
+      end
     end
   endif
   call win_gotoid(l:win)
 endfunction
 
-function TermCd(dir,count,global)
+function REPLCd(dir,count,global)
   if !a:global
     let l:prefix = get(b:,'repl_cd_prefix',g:repl_cd_prefix)
     let l:suffix = get(b:,'repl_cd_suffix',g:repl_cd_suffix)
@@ -185,10 +192,10 @@ function TermCd(dir,count,global)
     let l:prefix = g:repl_cd_prefix
     let l:suffix = g:repl_cd_suffix
   end
-  call TermSendText(l:prefix . a:dir . l:suffix,a:count)
+  call REPLSendText(l:prefix . a:dir . l:suffix,a:count)
 endfunction
 
-function TermRun(file,count,global)
+function REPLRun(file,count,global)
   if !a:global
     let l:prefix = get(b:,'repl_run_prefix',g:repl_run_prefix)
     let l:suffix = get(b:,'repl_run_suffix',g:repl_run_suffix)
@@ -196,24 +203,24 @@ function TermRun(file,count,global)
     let l:prefix = g:repl_run_prefix
     let l:suffix = g:repl_run_suffix
   end
-  call TermSendText(l:prefix . a:file . l:suffix,a:count)
+  call REPLSendText(l:prefix . a:file . l:suffix,a:count)
 endfunction
 
 " TODO: after testing that everything works as before
 " add a new command to run a custom repl and remove the shell command below
 
-command! -nargs=* -complete=shellcmd REPL :call ToggleTerminal(<f-args>)
-nnoremap <silent><Plug>(repl-send-text) :<C-u>call TermSendText(getline('.'),v:count,1)<cr>j
-vnoremap <silent><Plug>(repl-send-text) mr"ty:call TermSendText(@t,v:count,1)<cr>`r
-nnoremap <silent><Plug>(repl-toggle) :<C-u>call ToggleTerminal(v:count)<cr>
-nnoremap <silent><Plug>(repl-cd) :<C-u>call TermCd(expand('%:p:h'),v:count,0)<cr>
-nnoremap <silent><Plug>(repl-global-cd) :<C-u>call TermCd(expand('%:p:h'),v:count,1)<cr>
-nnoremap <silent><Plug>(repl-run) :<C-u>call TermRun(resolve(expand('%:p')),v:count,0)<cr>
-nnoremap <silent><Plug>(repl-resize) :<C-u>call ToggleTerminal()<cr><C-w>:execute ":resize " . g:repl_size<cr><C-w>p
+command! -nargs=* -complete=shellcmd REPL :call REPLToggle(<f-args>)
+nnoremap <silent><Plug>(repl-send-text) :<C-u>call REPLSendText(getline('.'),v:count,1)<cr>j
+vnoremap <silent><Plug>(repl-send-text) mr"ty:call REPLSendText(@t,v:count,1)<cr>`r
+nnoremap <silent><Plug>(repl-toggle) :<C-u>call REPLToggle(v:count)<cr>
+nnoremap <silent><Plug>(repl-cd) :<C-u>call REPLCd(expand('%:p:h'),v:count,0)<cr>
+nnoremap <silent><Plug>(repl-global-cd) :<C-u>call REPLCd(expand('%:p:h'),v:count,1)<cr>
+nnoremap <silent><Plug>(repl-run) :<C-u>call REPLRun(resolve(expand('%:p')),v:count,0)<cr>
+nnoremap <silent><Plug>(repl-resize) :<C-u>call REPLToggle()<cr><C-w>:execute ":resize " . g:repl_size<cr><C-w>p
 
 " TODO: add repl-resize for normal mode
-tnoremap <silent><Plug>(repl-toggle) <C-w>:call ToggleTerminal(0)<cr>
-tnoremap <silent><Plug>(repl-switch) <C-w>:call SwitchTerminal()<cr>
+tnoremap <silent><Plug>(repl-toggle) <C-w>:call REPLToggle(0)<cr>
+tnoremap <silent><Plug>(repl-switch) <C-w>:call REPLSwitch()<cr>
 tnoremap <silent><Plug>(repl-resize) <C-w>:execute ":resize " . g:repl_size<cr>
 
 if g:repl_default_mappings == 1
@@ -238,7 +245,7 @@ au FileType javascript let b:repl_cd_prefix='process.chdir("'
 au FileType javascript let b:repl_cd_suffix='")'
 au FileType javascript let b:repl_run_prefix='.load '
 au FileType javascript let b:repl_send_prefix=".editor\n"
-au FileType javascript let b:repl_send_suffix="\<c-d>"
+au FileType javascript let b:repl_send_suffix="\n\<c-d>"
 au FileType javascript let b:repl_send_text_delay='50m'
 
 au FileType r let b:repl_program='R'
