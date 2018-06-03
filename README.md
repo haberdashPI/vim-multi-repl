@@ -93,7 +93,7 @@ let g:repl_size = 20
 let g:repl_position = 'botright'
 ```
 
-## Mutliple REPLs
+## Multiple REPLs
 
 If you want to get fancy, you can have multiple REPLS per filetype and project.
 Use the `<Plug>(repl-switch)` mapping to switch between different REPLS while
