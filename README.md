@@ -68,7 +68,7 @@ vim-repl comes preconfigured for the following languages:
 5. Julia
 
 You can easily configure it for your specific language or shell. For example,
-to configure the commands for the python language vim-script includes the
+to configure the commands for the python language, vim-repl includes the
 following:
 
 ```vim
