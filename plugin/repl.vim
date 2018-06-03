@@ -126,7 +126,7 @@ function REPLToggle(...)
     call win_gotoid(win_findbuf(bufnr(l:term))[0])
     let b:opened_from = l:buf
   elseif !l:custom_start
-    let l:gotowin = g(b:,'opened_from','')
+    let l:gotowin = get(b:,'opened_from','')
     execute ":hide"
     if !empty(l:gotowin)
       let l:windows = win_findbuf(bufnr(l:gotowin))
