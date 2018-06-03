@@ -14,6 +14,7 @@ if version < 800
 end
 
 let g:repl_size = get(g:,'repl_size',20)
+let g:repl_position = get(g:,'repl_position','botright')
 let g:repl_default_mappings= get(g:,'repl_default_mappings',1)
 let g:repl_cd_prefix = get(g:,'repl_cd_prefix','cd ')
 let g:repl_cd_suffix = get(g:,'repl_cd_suffix','')
@@ -86,7 +87,7 @@ function s:REPLShow(term,count,program,start_only)
   endfor
 
   if empty(win_findbuf(bufnr(a:term)))
-    execute ":botright sb" . bufnr(a:term)
+    execute ":" . g:repl_position . " sb" . bufnr(a:term)
     execute ":resize " . g:repl_size
     call setbufvar(bufnr(a:term),'&buflisted',0)
   endif

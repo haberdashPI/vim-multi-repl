@@ -84,8 +84,16 @@ au FileType python let b:repl_send_suffix="\n--\n"
 
 Pull requests for new language configurations are welcome.
 
-These language specific variables default to global values specified
-by global variables of the same name. 
+These language specific variables default to global variables of the same name
+(e.g. `g:repl_program='sh'`). 
+
+You can configure the position and size of the REPL with the following
+variables:
+
+```vim
+let g:repl_size = 20
+let g:repl_position = 'botright'
+```
 
 ## Mutliple REPLs
 
