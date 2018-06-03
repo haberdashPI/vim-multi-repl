@@ -1,13 +1,14 @@
 # vim-repl
 
-A plugin for sane, frictionless interaction with multiple
+A Vim 8 plugin for sane, frictionless interaction with multiple
 [REPLs](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) and
 shells.
 
-This plugin opens REPL's on a per project and per file type basis. That way
-each project you are working on can have a separate REPL for each filetype
+![vim-repl Screenshot](vim-repl-demo.gif)
+
+Each project you are working on uses a separate REPL for each file type
 (langauge). A single command sends your code to the appropriate REPL based on
-the file you're currently in.
+the buffer you're currently in.
 
 This plugin uses [vim-projectroot](https://github.com/dbakker/vim-projectroot))
 to determine the current project (so make sure you have it installed).
@@ -15,33 +16,23 @@ to determine the current project (so make sure you have it installed).
 The available mappings are:
 
 1. `<Plug>(repl-toggle)` - open/hide a REPL.
-2. `<Plug>(repl-cd)` - change REPL directory to that of the current buffer's file
-3. `<Plug>(repl-global-cd)` - like `<Plug>(repl-cd)` but use the global
+2. `<Plug>(repl-send-text)` - send the current line or selected region to the REPL
+3. `<Plug>(repl-run)` - run the current file in the REPL
+4. `<Plug>(repl-cd)` - change REPL directory to that of the current buffer's file
+5. `<Plug>(repl-global-cd)` - like `<Plug>(repl-cd)` but use the global
    configuration (for an OS shell) instead of the local config (for a language
    specific REPL).
-4. `<Plug>(repl-run)` - run the current file in the REPL
-5. `<Plug>(repl-send-text)` - send the current line or selected region to the REPL
 6. `<Plug>(repl-resize)` - resize REPL to be `g:repl_size` lines (default = 20)
 7. `<Plug>(repl-switch)` - while in the REPL, switch to REPL 1-9 (see below)
-
-All of these mappings first open a new REPL, if necessary. You can explicitly
-open a new REPL using the `:REPL` command. You can pass an executable and its
-arguments to a REPL if you want to open a specific program. For example:
-
-```vim
-:REPL ipython --quick
-```
-
-You can also customize the specific command passed to the REPL for a particular
-language (see below) so that you don't have to call :REPL explicitly.
 
 The default mappings for these commands are as follows:
 
 ```vim
 nmap <Leader>' <Plug>(repl-toggle)
 tmap <C-w>' <Plug>(repl-toggle)
-
 nmap <Leader>. <Plug>(repl-send-text)
+vmap <Leader>. <Plug>(repl-send-text)
+
 nmap <Leader>r <Plug>(repl-run)
 nmap <Leader>cd <Plug>(repl-cd)
 nmap <Leader>gcd <Plug>(repl-global-cd)
@@ -49,7 +40,6 @@ nmap <Leader>= <Plug>(repl-resize)
 
 tmap <C-w>= <Plug>(repl-resize)
 tmap <C-w>g <Plug>(repl-switch)
-vmap <Leader>. <Plug>(repl-send-text)
 
 " not strictly related to plugin commands, but very handy for quickly reading
 " errors that scroll past the size of the REPL screen.
@@ -58,6 +48,14 @@ tmap <C-w><C-u> <C-w>N<C-u>:set nonumber<cr>
 
 If you wish to remove the default mappings you can add `let
 g:repl_default_mappings=0` to `.vimrc`.
+
+All of the mappings first open a new REPL, if necessary. You can explicitly
+open a new REPL using the `:REPL` command. You can pass an executable and its
+arguments to a REPL if you want to open a specific program. For example:
+
+```vim
+:REPL ipython --quick
+```
 
 ## Configuration
 
@@ -113,4 +111,5 @@ by the last REPL used in the current buffer.
 
 ## TODO:
 1. create an operator
-2. make the location of the REPL configuraable
+2. Make more of the defaults work correclty on Windows machines
+3. Make the plugin compatible with both Vim 8 and Neovim
