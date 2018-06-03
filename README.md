@@ -10,7 +10,7 @@ Each project you are working on uses a separate REPL for each file type
 (langauge). A single command sends your code to the appropriate REPL based on
 the buffer you're currently in.
 
-This plugin uses [vim-projectroot](https://github.com/dbakker/vim-projectroot))
+This plugin uses [vim-projectroot](https://github.com/dbakker/vim-projectroot)
 to determine the current project (so make sure you have it installed).
 
 The available mappings are:
