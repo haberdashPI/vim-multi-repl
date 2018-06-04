@@ -19,21 +19,21 @@ The available mappings are as follows:
 <Plug>(repl-toggle)
 ```
 
-![Toggle Video][vim-repl-toggle.gif]
+![Toggle Video](vim-repl-toggle.gif)
 
 ### Send current line or selected region
 ```vim
 <Plug>(repl-send-text)
 ```
 
-![Send Video][vim-repl-line.gif]
+![Send Video](vim-repl-line.gif)
 
 ### Send motion
 ```vim
 <Plug>(repl-send-motion)
 ```
 
-![Send Motion Video][vim-repl-motion.gif]
+![Send Motion Video](vim-repl-motion.gif)
 
 ### Run current file
 ```vim
@@ -157,7 +157,7 @@ in one, and pass a count to `<Plug>(repl-toggle)` to switch to a specific REPL.
 The `<Plug>(repl-switch)` mapping will open a prompt for a single number (1-9)
 and switch to the given REPL.
 
-![Multiple REPL video][vim-repl-multiple.gif]
+![Multiple REPL video](vim-repl-multiple.gif)
 
 In fact, each of the mappings can take a count which is used to specify which
 REPL to use. When no count is specified, the last REPL used by the current
