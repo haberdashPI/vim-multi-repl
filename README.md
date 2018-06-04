@@ -151,11 +151,11 @@ let g:repl_position = 'botright'
 
 ## Multiple REPLs
 
-If you want to get fancy, you can have multiple REPLS per filetype and project.
-Use the `<Plug>(repl-switch)` mapping to switch between different REPLS while
-in one, and pass a count to `<Plug>(repl-toggle)` to switch to a specific REPL.
-The `<Plug>(repl-switch)` mapping will open a prompt for a single number (1-9)
-and switch to the given REPL.
+If you want to get fancy, you can have multiple REPLS for a given filetype and
+project.  Use the `<Plug>(repl-switch)` mapping to switch between different
+REPLS while in one, and pass a count to `<Plug>(repl-toggle)` to switch to a
+specific REPL.  The `<Plug>(repl-switch)` mapping will open a prompt for a
+single number (1-9) and switch to the given REPL.
 
 ![Multiple REPL video](vim-repl-multiple.gif)
 
