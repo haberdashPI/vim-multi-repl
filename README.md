@@ -57,6 +57,18 @@ arguments to a REPL if you want to open a specific program. For example:
 :REPL ipython --quick
 ```
 
+## Installation
+
+vim-repl can be installed using any of the standard means of adding plugins to
+vim. For example, using [vim-plug](https://github.com/junegunn/vim-plug) you
+could add the following to `.vimrc`
+
+```vim
+Plug 'haberdashPI/vim-repl'
+```
+
+And then run `:source %` and `:PlugInstall` to install vim-repl.
+
 ## Configuration
 
 vim-repl comes preconfigured for the following languages:
