@@ -26,7 +26,7 @@ The available mappings are as follows:
 <Plug>(repl-send-text)
 ```
 
-![Send Video][vim-repl-line-gif]
+![Send Video][vim-repl-line.gif]
 
 ### Send motion
 ```vim
