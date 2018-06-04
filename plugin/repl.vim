@@ -207,10 +207,22 @@ function REPLRun(file,count,global)
   call REPLSendText(l:prefix . a:file . l:suffix,a:count)
 endfunction
 
-" TODO: after testing that everything works as before
-" add a new command to run a custom repl and remove the shell command below
+function REPLSendTextOp(opfunc)
+  let l:old_register = @@
+  if a:opfunc ==# 'line'
+    normal! `[V`]y`]j
+  elseif a:opfunc ==# 'char'
+    normal! `[v`]y`]
+  else
+    return
+  endif
+
+  call REPLSendText(@@,g:REPL_count_holder,1)
+  let @@ = l:old_register
+endfunction
 
 command! -nargs=* -complete=shellcmd REPL :call REPLToggle(<f-args>)
+nnoremap <silent><Plug>(repl-send-motion) :<C-u>let g:REPL_count_holder=v:count<cr>:set operatorfunc=REPLSendTextOp<cr>g@
 nnoremap <silent><Plug>(repl-send-text) :<C-u>call REPLSendText(getline('.'),v:count,1)<cr>j
 vnoremap <silent><Plug>(repl-send-text) mr"ty:call REPLSendText(@t,v:count,1)<cr>`r
 nnoremap <silent><Plug>(repl-toggle) :<C-u>call REPLToggle(v:count)<cr>
@@ -219,17 +231,17 @@ nnoremap <silent><Plug>(repl-global-cd) :<C-u>call REPLCd(expand('%:p:h'),v:coun
 nnoremap <silent><Plug>(repl-run) :<C-u>call REPLRun(resolve(expand('%:p')),v:count,0)<cr>
 nnoremap <silent><Plug>(repl-resize) :<C-u>call REPLToggle()<cr><C-w>:execute ":resize " . g:repl_size<cr><C-w>p
 
-" TODO: add repl-resize for normal mode
 tnoremap <silent><Plug>(repl-toggle) <C-w>:call REPLToggle(0)<cr>
 tnoremap <silent><Plug>(repl-switch) <C-w>:call REPLSwitch()<cr>
 tnoremap <silent><Plug>(repl-resize) <C-w>:execute ":resize " . g:repl_size<cr>
 
 if g:repl_default_mappings == 1
-  nmap <Leader>' <Plug>(repl-toggle)
+  nmap <C-w>' <Plug>(repl-toggle)
   nmap <Leader>= <Plug>(repl-resize)
   tmap <C-w>' <Plug>(repl-toggle)
 
-  nmap <Leader>. <Plug>(repl-send-text)
+  nmap <Leader>. <Plug>(repl-send-motion)
+  nmap <Leader>; <Plug>(repl-send-text)
   nmap <Leader>cd <Plug>(repl-cd)
   nmap <Leader>gcd <Plug>(repl-global-cd)
   nmap <Leader>r <Plug>(repl-run)
