@@ -36,9 +36,9 @@ function s:REPLName(count)
   let b:last_repl_count = l:count
   let l:projdir = projectroot#get(expand('%'))
   if len(l:projdir) > 0
-    let l:name = "term:" . fnamemodify(l:projdir,':t') . ":" . &filetype
+    let l:name = "repl:" . fnamemodify(l:projdir,':t') . ":" . &filetype
   else
-    let l:name = "term:" . &filetype
+    let l:name = "repl:" . &filetype
   endif
   if l:count > 1
     return l:name . ':' . l:count
@@ -48,13 +48,13 @@ function s:REPLName(count)
 endfunction
 
 " show the terminal, creating it if necessary
-function s:REPLShow(term,count,program,start_only)
+function s:REPLShow(repl,count,program,start_only)
   let l:dir = resolve(expand('%:p:h'))
 
   for i in range(1,bufnr('$'))
-    if !empty(matchstr(bufname(i),'term:.\+'))
+    if !empty(matchstr(bufname(i),'repl:.\+'))
       for w in win_findbuf(i)
-        if bufname(i) !=# a:term
+        if bufname(i) !=# a:repl
           call win_gotoid(w)
           execute ":hide"
         endif
@@ -62,12 +62,12 @@ function s:REPLShow(term,count,program,start_only)
     endif
   endfor
 
-  if bufnr(a:term) == -1
+  if bufnr(a:repl) == -1
     call term_start(a:program,{ 
           \ "cwd": l:dir,
           \ "hidden": 1,
           \ "norestore": 1,
-          \ "term_name": a:term,
+          \ "term_name": a:repl,
           \ "term_kill":  "term",
           \ "term_finish": "close"
           \ })
@@ -78,18 +78,18 @@ function s:REPLShow(term,count,program,start_only)
   " hide any other terminals
   for w in getwininfo()
     let l:name = bufname(w['bufnr'])
-    if l:name =~ '^term:'
-      if l:name !=# a:term
+    if l:name =~ '^repl:'
+      if l:name !=# a:repl
         exe w['winnr'] . "wincmd w" 
         wincmd c
       endif
     endif
   endfor
 
-  if empty(win_findbuf(bufnr(a:term)))
-    execute ":" . g:repl_position . " sb" . bufnr(a:term)
+  if empty(win_findbuf(bufnr(a:repl)))
+    execute ":" . g:repl_position . " sb" . bufnr(a:repl)
     execute ":resize " . g:repl_size
-    call setbufvar(bufnr(a:term),'&buflisted',0)
+    call setbufvar(bufnr(a:repl),'&buflisted',0)
   endif
 endfunction
 
@@ -120,10 +120,10 @@ function REPLToggle(...)
 
   let l:use_shell = a:0 > 0 ? a:1 : 0
   let l:buf = bufname("%")
-  if empty(matchstr(l:buf,'term:.\+'))
-    let l:term = s:REPLName(l:count)
-    call s:REPLShow(l:term,l:count,l:program,l:custom_start)
-    call win_gotoid(win_findbuf(bufnr(l:term))[0])
+  if empty(matchstr(l:buf,'repl:.\+'))
+    let l:repl = s:REPLName(l:count)
+    call s:REPLShow(l:repl,l:count,l:program,l:custom_start)
+    call win_gotoid(win_findbuf(bufnr(l:repl))[0])
     let b:opened_from = l:buf
   elseif !l:custom_start
     let l:gotowin = get(b:,'opened_from','')
@@ -145,11 +145,11 @@ function REPLSwitch()
   end
   let l:num = nr2char(getchar())
   if l:num > 1
-    let l:term = l:root . ':' . l:num
+    let l:repl = l:root . ':' . l:num
   else
-    let l:term = l:root
+    let l:repl = l:root
   end
-  call s:REPLShow(l:term,l:num,get(b:,'repl_program',g:repl_program),0)
+  call s:REPLShow(l:repl,l:num,get(b:,'repl_program',g:repl_program),0)
 endfunction
 
 " send a line to the terminal (showing it if necessary)
@@ -160,23 +160,23 @@ function REPLSendText(text,count,...)
 
   let l:prefix = get(b:,'repl_send_prefix',g:repl_send_prefix)
   let l:suffix = get(b:,'repl_send_suffix',g:repl_send_suffix)
-  if !empty(matchstr(l:buf,'term:\+'))
+  if !empty(matchstr(l:buf,'repl:\+'))
     echoer "Already in a terminal buffer." . 
           \ " Send text only works when focused on a text file."
   else
-    let l:term = s:REPLName(a:count)
-    call s:REPLShow(l:term,a:count,get(b:,'repl_program',g:repl_program),0)
+    let l:repl = s:REPLName(a:count)
+    call s:REPLShow(l:repl,a:count,get(b:,'repl_program',g:repl_program),0)
     if a:0 > 0 && a:1 > 0
-      call term_sendkeys(bufnr(l:term),l:prefix)
+      call term_sendkeys(bufnr(l:repl),l:prefix)
       if l:delay !=# '0m'
         execute 'sleep ' . l:delay
       end
     end
 
-    call term_sendkeys(bufnr(l:term),a:text . "\n")
+    call term_sendkeys(bufnr(l:repl),a:text . "\n")
 
     if a:0 > 0 && a:1 > 0
-      call term_sendkeys(bufnr(l:term),l:suffix)
+      call term_sendkeys(bufnr(l:repl),l:suffix)
       if l:delay !=# '0m'
         execute 'sleep ' . l:delay
       end
@@ -224,7 +224,7 @@ endfunction
 function REPLResize(size)
   let l:curwin = win_getid()
   for i in range(1,bufnr('$'))
-    if !empty(matchstr(bufname(i),'term:.\+'))
+    if !empty(matchstr(bufname(i),'repl:.\+'))
       for w in win_findbuf(i)
         call win_gotoid(w)
         execute ":resize " . a:size
