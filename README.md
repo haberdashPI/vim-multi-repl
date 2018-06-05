@@ -11,8 +11,20 @@ the buffer you're currently in.
 This plugin uses [vim-projectroot](https://github.com/dbakker/vim-projectroot)
 to determine the current project (so make sure you have it installed).
 
-## Available mappings
-The available mappings are as follows:
+## Installation
+
+vim-repl can be installed using any of the standard means of adding plugins to
+vim. For example, using [vim-plug](https://github.com/junegunn/vim-plug) you
+could add the following to `.vimrc`
+
+```vim
+Plug 'haberdashPI/vim-repl'
+```
+
+And then run `:source %` and `:PlugInstall` to install vim-repl.
+
+## Available mappings and commands
+The available mappings and commands are as follows:
 
 ### Open/hide a REPL
 ```vim
@@ -21,12 +33,18 @@ The available mappings are as follows:
 
 ![Toggle Video](vim-repl-toggle.gif)
 
+In a file buffer, open and move to the REPL associated with that buffer.
+In a REPL, hide the REPL (it continues to run in the background).
+
 ### Send current line or selected region
 ```vim
 <Plug>(repl-send-text)
 ```
 
 ![Send Video](vim-repl-line.gif)
+
+Send the current line or highlighted text to the REPL associated with this 
+buffer.
 
 ### Send motion
 ```vim
@@ -35,18 +53,22 @@ The available mappings are as follows:
 
 ![Send Motion Video](vim-repl-motion.gif)
 
+Send the text specified by a motion to the REPL associated with this buffer.
+
 ### Run current file
 ```vim
 <Plug>(repl-run)
 ```
-Runs the current file in the REPL
+Runs the current file in the REPL associated with this buffer.
+Depends on language specific configuration (see below).
 
 ### Change directory
 ```vim
 <Plug>(repl-cd)
 ```
 
-Change REPL directory to that of the current buffer's file
+Change directory to that of the current buffer's file in the REPL associated
+with this buffer. Depends on language specific configuration (see below).
 
 ```vim
 <Plug>(repl-global-cd)
@@ -59,7 +81,8 @@ instead of the local config (for a language specific REPL).
 ```vim
 <Plug>(repl-resize)
 ```
-Resize REPL to be `g:repl_size` lines (default = 20).
+Resize REPL to be `g:repl_size` lines (default = 20). If passed a count
+resize to 'count' number of lines.
 
 ### Switch REPLs
 ```vim
@@ -67,8 +90,24 @@ Resize REPL to be `g:repl_size` lines (default = 20).
 ```
 While in the REPL, switch to REPL 1-9 (see below).
 
+### REPL
+
+This command opens a given program with the given passed arguments.  This is
+called automatically. It is only necessary to call manually if you wish to
+override the default REPL program.
+
+For example to remove all colors in ipython you could call
+
+```vim
+:REPL ipython --colors=no
+```
+
+### REPLCloseAll
+
+This command close all REPLs that have been opened.
+
 ## Default Mappings
-The default mappings for these commands are as follows:
+The default key mappings are as follows:
 
 ```vim
 nmap <C-w>' <Plug>(repl-toggle)
@@ -93,26 +132,6 @@ tmap <C-w><C-u> <C-w>N<C-u>:set nonumber<cr>
 If you wish to remove the default mappings you can add `let
 g:repl_default_mappings=0` to `.vimrc`.
 
-All of the mappings first open a new REPL, if necessary. You can explicitly
-open a new REPL using the `:REPL` command. You can pass an executable and its
-arguments to a REPL if you want to open a specific program. For example:
-
-```vim
-:REPL ipython --quick
-```
-
-## Installation
-
-vim-repl can be installed using any of the standard means of adding plugins to
-vim. For example, using [vim-plug](https://github.com/junegunn/vim-plug) you
-could add the following to `.vimrc`
-
-```vim
-Plug 'haberdashPI/vim-repl'
-```
-
-And then run `:source %` and `:PlugInstall` to install vim-repl.
-
 ## Configuration
 
 vim-repl comes preconfigured for the following languages:
@@ -124,16 +143,18 @@ vim-repl comes preconfigured for the following languages:
 5. Julia
 
 You can easily configure it for your specific language or shell. For example,
-to configure the commands for the python language, vim-repl includes the
-following:
+if python were not already available you could add the following to `.vimrc`:
 
 ```vim
-au FileType python let b:repl_program='ipython'
-au FileType python let b:repl_cd_prefix='%cd '
-au FileType python let b:repl_run_prefix='%run '
-au FileType python let b:repl_send_text_delay='250m'
-au FileType python let b:repl_send_prefix="%cpaste\n"
-au FileType python let b:repl_send_suffix="\n--\n"
+augroup PythonREPL
+  au!
+  au FileType python let b:repl_program='ipython'
+  au FileType python let b:repl_cd_prefix='%cd '
+  au FileType python let b:repl_run_prefix='%run '
+  au FileType python let b:repl_send_text_delay='250m'
+  au FileType python let b:repl_send_prefix="%cpaste\n"
+  au FileType python let b:repl_send_suffix="\n--\n"
+augroup END
 ```
 
 Pull requests for new language configurations are welcome.
@@ -143,25 +164,23 @@ These language specific variables default to global variables of the same name
 
 You can configure the position and size of the REPL with the following
 variables:
-
 ```vim
 let g:repl_size = 20
 let g:repl_position = 'botright'
 ```
 
 ## Multiple REPLs
-
-If you want to get fancy, you can have multiple REPLS for a given filetype and
-project.  Use the `<Plug>(repl-switch)` mapping to switch between different
-REPLS while in one, and pass a count to `<Plug>(repl-toggle)` to switch to a
-specific REPL.  The `<Plug>(repl-switch)` mapping will open a prompt for a
-single number (1-9) and switch to the given REPL.
+You can have multiple REPLS for a given filetype and project. These are
+referred to using numbers 1-9. Pass a count to `<Plug>(repl-toggle)` to switch
+to a specific REPL. The `<Plug>(repl-switch)` mapping will open a prompt for a
+single number (1-9) and switch to the given REPL. 
 
 ![Multiple REPL video](vim-repl-multiple.gif)
 
 In fact, each of the mappings can take a count which is used to specify which
 REPL to use. When no count is specified, the last REPL used by the current
-buffer is assumed. If this REPL was closed, it gets re-opened.
+buffer is assumed, and REPL 1 is assumed if no REPL was previosuly used. If this
+REPL was closed, it gets re-opened.
 
 Likewise, the `:REPL` command takes an optional first argument ranging from 1-9
 that indicates the REPL you wish to start and the default is determined
@@ -170,3 +189,4 @@ by the last REPL used in the current buffer.
 ## TODO:
 1. Make sure all of the defaults work correclty on Windows machines
 2. Make the plugin compatible with both Vim 8 and Neovim
+
