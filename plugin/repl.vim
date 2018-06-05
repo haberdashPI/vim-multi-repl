@@ -1,5 +1,5 @@
 " repl.vim - frictionaless REPL interaction
-" Maintainer: David F. Little
+" Maintainer: David F. Little <david.frank.little@gmail.com>
 " Version: 0.3
 " Licesnse: MIT
 
