@@ -222,14 +222,21 @@ function REPLSendTextOp(opfunc)
 endfunction
 
 command! -nargs=* -complete=shellcmd REPL :call REPLToggle(<f-args>)
-nnoremap <silent><Plug>(repl-send-motion) :<C-u>let g:REPL_count_holder=v:count<cr>:set operatorfunc=REPLSendTextOp<cr>g@
-nnoremap <silent><Plug>(repl-send-text) :<C-u>call REPLSendText(getline('.'),v:count,1)<cr>j
-vnoremap <silent><Plug>(repl-send-text) mr"ty:call REPLSendText(@t,v:count,1)<cr>`r
+nnoremap <silent><Plug>(repl-send-motion)
+      \ :<C-u>let g:REPL_count_holder=v:count<cr>
+      \ :set operatorfunc=REPLSendTextOp<cr>g@
+nnoremap <silent><Plug>(repl-send-text) 
+      \ :<C-u>call REPLSendText(getline('.'),v:count,1)<cr>j
+vnoremap <silent><Plug>(repl-send-text) 
+      \ mr"ty:call REPLSendText(@t,v:count,1)<cr>`r
 nnoremap <silent><Plug>(repl-toggle) :<C-u>call REPLToggle(v:count)<cr>
-nnoremap <silent><Plug>(repl-cd) :<C-u>call REPLCd(expand('%:p:h'),v:count,0)<cr>
-nnoremap <silent><Plug>(repl-global-cd) :<C-u>call REPLCd(expand('%:p:h'),v:count,1)<cr>
-nnoremap <silent><Plug>(repl-run) :<C-u>call REPLRun(resolve(expand('%:p')),v:count,0)<cr>
-nnoremap <silent><Plug>(repl-resize) :<C-u>call REPLToggle()<cr><C-w>:execute ":resize " . g:repl_size<cr><C-w>p
+nnoremap <silent><Plug>(repl-cd) 
+      \ :<C-u>call REPLCd(expand('%:p:h'),v:count,0)<cr>
+nnoremap <silent><Plug>(repl-global-cd) 
+      \ :<C-u>call REPLCd(expand('%:p:h'),v:count,1)<cr>
+nnoremap <silent><Plug>(repl-run) 
+      \ :<C-u>call REPLRun(resolve(expand('%:p')),v:count,0)<cr>
+nnoremap <silent><Plug>(repl-resize) :<C-u>call REPLResize()<cr>
 
 tnoremap <silent><Plug>(repl-toggle) <C-w>:call REPLToggle(0)<cr>
 tnoremap <silent><Plug>(repl-switch) <C-w>:call REPLSwitch()<cr>
