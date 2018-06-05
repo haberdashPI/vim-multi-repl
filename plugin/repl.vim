@@ -234,7 +234,17 @@ function REPLResize(size)
   call win_gotoid(l:curwin)
 endfunction
 
+function REPLCloseAll()
+  for i in range(1,bufnr('$'))
+    if !empty(matchstr(bufname(i),'repl:.\+'))
+      echom "Closing " . bufname(i)
+      execute ":bw! " . bufname(i)
+    endif
+  endfor
+endfunction
+      
 command! -nargs=* -complete=shellcmd REPL :call REPLToggle(<f-args>)
+command! -nargs=0 REPLCloseAll :call REPLCloseAll()
 nnoremap <silent><Plug>(repl-send-motion)
       \ :<C-u>let g:REPL_count_holder=v:count<cr>
       \ :set operatorfunc=REPLSendTextOp<cr>g@
