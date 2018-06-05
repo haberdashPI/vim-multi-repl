@@ -1,6 +1,6 @@
 " repl.vim - frictionaless REPL interaction
 " Maintainer: David F. Little
-" Version: 0.2
+" Version: 0.3
 " Licesnse: MIT
 
 if &cp || exists('loaded_vimrepl')
