@@ -221,6 +221,19 @@ function REPLSendTextOp(opfunc)
   let @@ = l:old_register
 endfunction
 
+function REPLResize(size)
+  let l:curwin = win_getid()
+  for i in range(1,bufnr('$'))
+    if !empty(matchstr(bufname(i),'term:.\+'))
+      for w in win_findbuf(i)
+        call win_gotoid(w)
+        execute ":resize " . a:size
+      endfor
+    endif
+  endfor
+  call win_gotoid(l:curwin)
+endfunction
+
 command! -nargs=* -complete=shellcmd REPL :call REPLToggle(<f-args>)
 nnoremap <silent><Plug>(repl-send-motion)
       \ :<C-u>let g:REPL_count_holder=v:count<cr>
@@ -236,11 +249,12 @@ nnoremap <silent><Plug>(repl-global-cd)
       \ :<C-u>call REPLCd(expand('%:p:h'),v:count,1)<cr>
 nnoremap <silent><Plug>(repl-run) 
       \ :<C-u>call REPLRun(resolve(expand('%:p')),v:count,0)<cr>
-nnoremap <silent><Plug>(repl-resize) :<C-u>call REPLResize()<cr>
+nnoremap <silent><Plug>(repl-resize) 
+      \ :<C-u>call REPLResize(v:count > 0 ? v:count : g:repl_size)<cr>
 
 tnoremap <silent><Plug>(repl-toggle) <C-w>:call REPLToggle(0)<cr>
 tnoremap <silent><Plug>(repl-switch) <C-w>:call REPLSwitch()<cr>
-tnoremap <silent><Plug>(repl-resize) <C-w>:execute ":resize " . g:repl_size<cr>
+tnoremap <silent><Plug>(repl-resize) <C-w>:call REPLResize(g:repl_size)<cr>
 
 if g:repl_default_mappings == 1
   nmap <C-w>' <Plug>(repl-toggle)
