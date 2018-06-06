@@ -149,6 +149,12 @@ function REPLSwitch()
   else
     let l:repl = l:root
   end
+  
+  " change the count for the buffer this repl was last used from
+  let l:changebuf = get(b:,'opened_from','')
+  if !empty(l:changebuf)
+    call setbufvar(l:changebuf,'last_repl_count',l:num)
+  end
   call s:REPLShow(l:repl,l:num,get(b:,'repl_program',g:repl_program),0)
 endfunction
 
