@@ -41,6 +41,8 @@ In a REPL, hide the REPL (it continues to run in the background).
 <Plug>(repl-send-text)
 ```
 
+Default mapping: normal mode = `<Leader>;` visual mode = `<Leader>.`
+
 ![Send Video](vim-repl-line.gif)
 
 Send the current line or highlighted text to the REPL associated with this 
@@ -51,6 +53,8 @@ buffer.
 <Plug>(repl-send-motion)
 ```
 
+Default mapping: `<Leader>.`
+
 ![Send Motion Video](vim-repl-motion.gif)
 
 Send the text specified by a motion to the REPL associated with this buffer.
@@ -59,6 +63,9 @@ Send the text specified by a motion to the REPL associated with this buffer.
 ```vim
 <Plug>(repl-run)
 ```
+
+Default mapping: `<Leader>r`
+
 Runs the current file in the REPL associated with this buffer.
 Depends on language specific configuration (see below).
 
@@ -67,6 +74,8 @@ Depends on language specific configuration (see below).
 <Plug>(repl-cd)
 ```
 
+Default mapping: `<Leader>cd`
+
 Change directory to that of the current buffer's file in the REPL associated
 with this buffer. Depends on language specific configuration (see below).
 
@@ -74,27 +83,36 @@ with this buffer. Depends on language specific configuration (see below).
 <Plug>(repl-global-cd)
 ```
 
-Like `<Plug>(repl-cd)` but use the global configuration (for an OS shell)
-instead of the local config (for a language specific REPL).
+Default mapping: `<Leader>gcd`
+
+Like `<Plug>(repl-cd)` but use the global default, not the language specific
+one.
 
 ### Resize 
 ```vim
 <Plug>(repl-resize)
 ```
-Resize REPL to be `g:repl_size` lines (default = 20). If passed a count
-resize to 'count' number of lines.
+
+Default mapping: normal and visual mode = `<Leader>=`, terminal mode = `<C-w>=`
+
+Resize REPL to be `g:repl_size` lines (default = 20). When passed a count,
+it instead resizes to the specified number of lines.
 
 ### Switch REPLs
 ```vim
 <Plug>(repl-switch)
 ```
+
+Default mapping: `<C-w>g[n]` where `n = 1-9`
+
 While in the REPL, switch to REPL 1-9 (see below).
 
 ### REPL
 
 This command opens a given program with the given passed arguments.  This is
-called automatically. It is only necessary to call manually if you wish to
-override the default REPL program.
+called automatically, as necessary, with no arugments, for each of the above
+mappings. It is only necessary to call manually if you wish to override the
+default REPL program or pass additional arguments to the program.
 
 For example to remove all colors in ipython you could call
 
@@ -106,33 +124,22 @@ For example to remove all colors in ipython you could call
 
 This command close all REPLs that have been opened.
 
-## Default Mappings
-The default key mappings are as follows:
+### Scroll Back
+
+Though not strictly part of the commands above, this plugin adds the following
+convienient key mapping
 
 ```vim
-nmap <C-w>' <Plug>(repl-toggle)
-tmap <C-w>' <Plug>(repl-toggle)
-nmap <Leader>; <Plug>(repl-send-text)
-vmap <Leader>. <Plug>(repl-send-text)
-nmap <Leader>. <Plug>(repl-send-motion)
-
-nmap <Leader>r <Plug>(repl-run)
-nmap <Leader>cd <Plug>(repl-cd)
-nmap <Leader>gcd <Plug>(repl-global-cd)
-nmap <Leader>= <Plug>(repl-resize)
-
-tmap <C-w>= <Plug>(repl-resize)
-tmap <C-w>g <Plug>(repl-switch)
-
-" not strictly related to plugin commands, but very handy for quickly reading
-" errors that scroll past the size of the REPL screen.
 tmap <C-w><C-u> <C-w>N<C-u>:set nonumber<cr> 
 ```
 
-If you wish to remove the default mappings you can add `let
-g:repl_default_mappings=0` to `.vimrc`.
+This makes it easy to scroll back in the REPL by hitting `<C-w><C-u>` to look 
+at errors.
 
 ## Configuration
+
+If you wish to remove the default mappings you can add `let
+g:repl_default_mappings=0` to `.vimrc`.
 
 vim-multi-repl comes preconfigured for the following languages:
 
@@ -157,6 +164,9 @@ augroup PythonREPL
 augroup END
 ```
 
+The delay is there to avoid some of issues with ipython dropping
+text sent to it. This delay occurs directly after the send prefix.
+
 Pull requests for new language configurations are welcome.
 
 These language specific variables default to global variables of the same name
@@ -170,7 +180,8 @@ let g:repl_position = 'botright'
 ```
 
 ## Multiple REPLs per filetype
-By default there is one REPL per filetype and project. But you can even have
+
+By default there is one REPL per filetype and project. But you can have
 multiple REPLS for a given filetype and project. These are referred to using
 numbers 1-9. Pass a count to `<Plug>(repl-toggle)` to switch to a specific
 REPL. The `<Plug>(repl-switch)` mapping will open a prompt for a single number
