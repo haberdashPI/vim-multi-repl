@@ -1,4 +1,4 @@
-# vim-repl
+# vim-multi-repl
 
 A Vim 8 plugin for sane, frictionless interaction with multiple
 [REPLs](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) and
@@ -6,22 +6,22 @@ shells.
 
 Each project you are working on uses a separate REPL for each file type
 (langauge). A single command sends your code to the appropriate REPL based on
-the buffer you're currently in.
+the buffer you're currently in. 
 
 This plugin uses [vim-projectroot](https://github.com/dbakker/vim-projectroot)
 to determine the current project (so make sure you have it installed).
 
 ## Installation
 
-vim-repl can be installed using any of the standard means of adding plugins to
+vim-multi-repl can be installed using any of the standard means of adding plugins to
 vim. For example, using [vim-plug](https://github.com/junegunn/vim-plug) you
 could add the following to `.vimrc`
 
 ```vim
-Plug 'haberdashPI/vim-repl'
+Plug 'haberdashPI/vim-multi-repl'
 ```
 
-And then run `:source %` and `:PlugInstall` to install vim-repl.
+And then run `:source %` and `:PlugInstall` to install vim-multi-repl.
 
 ## Available mappings and commands
 The available mappings and commands are as follows:
@@ -134,7 +134,7 @@ g:repl_default_mappings=0` to `.vimrc`.
 
 ## Configuration
 
-vim-repl comes preconfigured for the following languages:
+vim-multi-repl comes preconfigured for the following languages:
 
 1. Python (ipython)
 2. Javascript (node)
@@ -169,11 +169,12 @@ let g:repl_size = 20
 let g:repl_position = 'botright'
 ```
 
-## Multiple REPLs
-You can have multiple REPLS for a given filetype and project. These are
-referred to using numbers 1-9. Pass a count to `<Plug>(repl-toggle)` to switch
-to a specific REPL. The `<Plug>(repl-switch)` mapping will open a prompt for a
-single number (1-9) and switch to the given REPL. 
+## Multiple REPLs per filetype
+By default there is one REPL per filetype and project. But you can even have
+multiple REPLS for a given filetype and project. These are referred to using
+numbers 1-9. Pass a count to `<Plug>(repl-toggle)` to switch to a specific
+REPL. The `<Plug>(repl-switch)` mapping will open a prompt for a single number
+(1-9) and switch to the given REPL. 
 
 ![Multiple REPL video](vim-repl-multiple.gif)
 
