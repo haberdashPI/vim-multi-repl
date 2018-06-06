@@ -1,4 +1,4 @@
-" repl.vim - frictionaless REPL interaction
+" multi-repl.vim - frictionaless REPL interaction
 " Maintainer: David F. Little <david.frank.little@gmail.com>
 " Version: 0.3
 " Licesnse: MIT
@@ -210,9 +210,9 @@ endfunction
 function REPLSendTextOp(opfunc)
   let l:old_register = @@
   if a:opfunc ==# 'line'
-    normal! `[V`]y`]j
+    normal! '[V']y']j
   elseif a:opfunc ==# 'char'
-    normal! `[v`]y`]
+    normal! `[hv`]y`]
   else
     return
   endif
@@ -268,18 +268,28 @@ tnoremap <silent><Plug>(repl-resize) <C-w>:call REPLResize(g:repl_size)<cr>
 
 if g:repl_default_mappings == 1
   nmap <C-w>' <Plug>(repl-toggle)
-  nmap <Leader>= <Plug>(repl-resize)
+  vmap <C-w>' <Plug>(repl-toggle)
   tmap <C-w>' <Plug>(repl-toggle)
 
-  nmap <Leader>. <Plug>(repl-send-motion)
-  nmap <Leader>; <Plug>(repl-send-text)
-  nmap <Leader>cd <Plug>(repl-cd)
-  nmap <Leader>gcd <Plug>(repl-global-cd)
-  nmap <Leader>r <Plug>(repl-run)
+  nmap <Leader>= <Plug>(repl-resize)
+  vmap <Leader>= <Plug>(repl-resize)
   tmap <C-w>= <Plug>(repl-resize)
+
+  nmap <Leader>. <Plug>(repl-send-motion)
+  vmap <silent><Leader>. <Plug>(repl-send-text)
+  nmap <Leader>; <Plug>(repl-send-text)
+
+  nmap <Leader>r <Plug>(repl-run)
+  vmap <Leader>r <Plug>(repl-run)
+
+  nmap <Leader>cd <Plug>(repl-cd)
+  vmap <Leader>cd <Plug>(repl-cd)
+
+  nmap <Leader>gcd <Plug>(repl-global-cd)
+  vmap <Leader>gcd <Plug>(repl-global-cd)
+
   tmap <C-w>g <Plug>(repl-switch)
   tmap <C-w><C-u> <C-w>N<C-u>:set nonumber<cr>
-  vmap <silent><Leader>. <Plug>(repl-send-text)
 end
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
