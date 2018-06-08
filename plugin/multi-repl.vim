@@ -1,6 +1,6 @@
 " multi-repl.vim - frictionaless REPL interaction
 " Maintainer: David F. Little <david.frank.little@gmail.com>
-" Version: 0.3
+" Version: 0.3.1
 " Licesnse: MIT
 
 if &cp || exists('loaded_vimrepl')
@@ -117,6 +117,7 @@ function s:REPLToggle(...)
     let l:program = get(b:,'repl_program',g:repl_program)
     let l:custom_start = 0
   end
+  " echom 'Count'  . l:count
 
   let l:use_shell = a:0 > 0 ? a:1 : 0
   let l:buf = bufname("%")
@@ -138,25 +139,11 @@ function s:REPLToggle(...)
 endfunction
 
 function s:REPLSwitch()
-  let l:parts = split(bufname('%'),':')
-  let l:root = bufname('%')
-  if l:parts[-1] =~ '\d\+'
-    let l:root = join(l:parts[0:-2],':')
-  end
   let l:num = nr2char(getchar())
-  if l:num > 1
-    let l:repl = l:root . ':' . l:num
-  else
-    let l:repl = l:root
-  end
-  
-  " change the count for the buffer this repl was last used from
-  let l:changebuf = get(b:,'opened_from','')
-  if !empty(l:changebuf)
-    call setbufvar(l:changebuf,'last_repl_count',l:num)
-  end
-  call s:REPLShow(l:repl,l:num,get(b:,'repl_program',g:repl_program),0)
+  call s:REPLToggle(0)
+  call s:REPLToggle(l:num)
 endfunction
+  
 
 " send a line to the terminal (showing it if necessary)
 function s:REPLSendText(text,count,...)
@@ -170,6 +157,7 @@ function s:REPLSendText(text,count,...)
     echoer "Already in a terminal buffer." . 
           \ " Send text only works when focused on a text file."
   else
+    " echom 'Count'  . a:count
     let l:repl = s:REPLName(a:count)
     call s:REPLShow(l:repl,a:count,get(b:,'repl_program',g:repl_program),0)
     if a:0 > 0 && a:1 > 0
@@ -214,7 +202,6 @@ function s:REPLRun(file,count,global)
 endfunction
 
 function s:REPLSendTextOp(opfunc)
-  let l:old_register = @@
   if a:opfunc ==# 'line'
     let l:old_pos = getcurpos()
     let l:old_line = getcurpos()[1]
@@ -225,13 +212,12 @@ function s:REPLSendTextOp(opfunc)
       normal! +
     end
   elseif a:opfunc ==# 'char'
-    normal! `[hv`]y`]
+    normal! `[hv`]"ty`]
   else
     return
   endif
 
-  call s:REPLSendText(@@,g:REPL_count_holder,1)
-  let @@ = l:old_register
+  call s:REPLSendText(@t,g:REPL_count_holder,1)
 endfunction
 
 function s:REPLResize(size)
@@ -250,21 +236,29 @@ endfunction
 function s:REPLCloseAll()
   for i in range(1,bufnr('$'))
     if !empty(matchstr(bufname(i),'repl:.\+'))
-      echom "Closing " . bufname(i)
       execute ":bw! " . bufname(i)
+    endif
+  endfor
+endfunction
+
+function s:REPLListAll()
+  for i in range(1,bufnr('$'))
+    if !empty(matchstr(bufname(i),'repl:.\+'))
+      echom bufname(i)
     endif
   endfor
 endfunction
       
 command! -nargs=* -complete=shellcmd REPL :call <SID>REPLToggle(<f-args>)
 command! -nargs=0 REPLCloseAll :call <SID>REPLCloseAll()
-nnoremap <silent><Plug>(repl-send-motion)
-      \ :<C-u>let g:REPL_count_holder=v:count<cr>
-      \ :set operatorfunc=<SID>REPLSendTextOp<cr>g@
+command! -nargs=0 REPLlist :call <SID>REPLListAll()
+nnoremap <silent><Plug>(repl-send-motion) :<C-u>let g:REPL_count_holder=v:count<cr>
+      \:set operatorfunc=<SID>REPLSendTextOp<cr>g@
 nnoremap <silent><Plug>(repl-send-text) 
-      \ :<C-u>call <SID>REPLSendText(getline('.'),v:count,1)<cr>j
-vnoremap <silent><Plug>(repl-send-text) 
-      \ mr"ty:call <SID>REPLSendText(@t,v:count,1)<cr>`r
+      \:<C-u>let g:REPL_count_holder=v:count<cr>
+      \"tyy:<C-u>call <SID>REPLSendText(@t,g:REPL_count_holder,1)<cr>+
+vnoremap <silent><Plug>(repl-send-text) :<C-u>let g:REPL_count_holder=v:count<cr>
+      \mr"ty:call <SID>REPLSendText(@t,g:REPL_count_holder,1)<cr>`r
 nnoremap <silent><Plug>(repl-toggle) :<C-u>call <SID>REPLToggle(v:count)<cr>
 nnoremap <silent><Plug>(repl-cd) 
       \ :<C-u>call <SID>REPLCd(expand('%:p:h'),v:count,0)<cr>
