@@ -216,7 +216,14 @@ endfunction
 function s:REPLSendTextOp(opfunc)
   let l:old_register = @@
   if a:opfunc ==# 'line'
-    normal! '[V']y']j
+    let l:old_pos = getcurpos()
+    let l:old_line = getcurpos()[1]
+    normal! '[V']"ty']
+    if l:old_line >= getcurpos()[1]
+      :call setpos('.',l:old_pos)
+    else
+      normal! +
+    end
   elseif a:opfunc ==# 'char'
     normal! `[hv`]y`]
   else
