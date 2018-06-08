@@ -1,6 +1,6 @@
 # vim-multi-repl
 
-A Vim 8 plugin for sane, frictionless interaction with multiple
+A Vim 8 and Neovim plugin for sane, frictionless interaction with multiple
 [REPLs](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) and
 shells.
 
@@ -23,7 +23,7 @@ Plug 'haberdashPI/vim-multi-repl'
 
 And then run `:source %` and `:PlugInstall` to install vim-multi-repl.
 
-## Available mappings and commands
+## Usage
 The available mappings and commands are as follows:
 
 ### Open/hide a REPL
@@ -32,6 +32,9 @@ The available mappings and commands are as follows:
 ```
 
 ![Toggle Video](vim-repl-toggle.gif)
+
+
+Default mapping: `<c-w>'`
 
 In a file buffer, open and move to the REPL associated with that buffer.
 In a REPL, hide the REPL (it continues to run in the background).
@@ -48,6 +51,10 @@ Default mapping: normal mode = `<Leader>;` visual mode = `<Leader>.`
 Send the current line or highlighted text to the REPL associated with this 
 buffer.
 
+Normally this will work without a language specific configuration
+but there are optional prefixes and suffixes you can send for specific
+languages (see below).
+
 ### Send motion
 ```vim
 <Plug>(repl-send-motion)
@@ -58,6 +65,10 @@ Default mapping: `<Leader>.`
 ![Send Motion Video](vim-repl-motion.gif)
 
 Send the text specified by a motion to the REPL associated with this buffer.
+
+Normally this will work without a language specific configuration
+but there are optional prefixes and suffixes you can send for specific
+languages (see below).
 
 ### Run current file
 ```vim
@@ -87,6 +98,12 @@ Default mapping: `<Leader>gcd`
 
 Like `<Plug>(repl-cd)` but use the global default, not the language specific
 one.
+
+This command can be handy if you open a language specific REPL
+using `:REPL sh`: you can change directories while in the shell using
+this command; then, once you've started the language specific program
+within the shell (e.g. `ipython`) you can use the language specific
+settings to change directories using `<Plug>(repl-cd)`.
 
 ### Resize 
 ```vim
@@ -122,19 +139,16 @@ For example to remove all colors in ipython you could call
 
 ### REPLCloseAll
 
-This command close all REPLs that have been opened.
+This command closes all REPLs that have been opened.
+
+### REPLlist
+
+This command lists the name of all open REPLs.
 
 ### Scroll Back
 
-Though not strictly part of the commands above, this plugin adds the following
-convienient key mapping
-
-```vim
-tmap <C-w><C-u> <C-w>N<C-u>:set nonumber<cr> 
-```
-
-This makes it easy to scroll back in the REPL by hitting `<C-w><C-u>` to look 
-at errors.
+Though not strictly specific to REPLs, this plugin adds a mapping for terminals
+so that `<C-w><C-u>` switches to normal mode and scrolls up in the buffer.
 
 ## Configuration
 
@@ -149,8 +163,9 @@ vim-multi-repl comes preconfigured for the following languages:
 4. R
 5. Julia
 
-You can easily configure it for your specific language or shell. For example,
-if python were not already available you could add the following to `.vimrc`:
+You can quickly and easily configure it for your specific language or shell.
+For example, if python were not already available you could add the following
+to `.vimrc`:
 
 ```vim
 augroup PythonREPL
@@ -164,8 +179,9 @@ augroup PythonREPL
 augroup END
 ```
 
-The delay is there to avoid some of issues with ipython dropping
-text sent to it. This delay occurs directly after the send prefix.
+The delay is there to avoid some of the issues with ipython dropping
+text sent to it. This delay occurs directly after the send prefix and 
+before the suffix.
 
 Pull requests for new language configurations are welcome.
 
@@ -182,16 +198,17 @@ let g:repl_position = 'botright'
 ## Multiple REPLs per filetype
 
 By default there is one REPL per filetype and project. But you can have
-multiple REPLS for a given filetype and project. These are referred to using
-numbers 1-9. Pass a count to `<Plug>(repl-toggle)` to switch to a specific
-REPL. The `<Plug>(repl-switch)` mapping will open a prompt for a single number
-(1-9) and switch to the given REPL. 
+multiple REPLS for a given filetype and project, if you wish. These are
+referred to using numbers 1-9. Pass a count to `<Plug>(repl-toggle)` to switch
+to a specific REPL. In addition, while in terminal mode `<Plug>(repl-switch)`
+mapping will open a prompt for a single number (1-9) and switch to the given
+REPL. 
 
 ![Multiple REPL video](vim-repl-multiple.gif)
 
 In fact, each of the mappings can take a count which is used to specify which
 REPL to use. When no count is specified, the last REPL used by the current
-buffer is assumed, and REPL 1 is assumed if no REPL was previosuly used. If this
+buffer is assumed, and REPL 1 is assumed if no REPL was previosuly used. If the
 REPL was closed, it gets re-opened.
 
 Likewise, the `:REPL` command takes an optional first argument ranging from 1-9
@@ -200,5 +217,4 @@ by the last REPL used in the current buffer.
 
 ## TODO:
 1. Make sure all of the defaults work correclty on Windows machines
-2. Make the plugin compatible with both Vim 8 and Neovim
 
