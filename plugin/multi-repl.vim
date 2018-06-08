@@ -96,7 +96,7 @@ endfunction
 " switch to terminal (showing it if necessary) when not in a terminal,
 " hide the terminal and return to the buffer that opeend the terminal
 " if it's already the active window
-function REPLToggle(...)
+function s:REPLToggle(...)
   if a:0 > 0
     if a:1 =~# '^\d\+$'
       let l:count = a:1
@@ -137,7 +137,7 @@ function REPLToggle(...)
   endif
 endfunction
 
-function REPLSwitch()
+function s:REPLSwitch()
   let l:parts = split(bufname('%'),':')
   let l:root = bufname('%')
   if l:parts[-1] =~ '\d\+'
@@ -159,7 +159,7 @@ function REPLSwitch()
 endfunction
 
 " send a line to the terminal (showing it if necessary)
-function REPLSendText(text,count,...)
+function s:REPLSendText(text,count,...)
   let l:buf = bufname("%")
   let l:win = win_getid()
   let l:delay = get(b:,'repl_send_text_delay',g:repl_send_text_delay)
@@ -191,7 +191,7 @@ function REPLSendText(text,count,...)
   call win_gotoid(l:win)
 endfunction
 
-function REPLCd(dir,count,global)
+function s:REPLCd(dir,count,global)
   if !a:global
     let l:prefix = get(b:,'repl_cd_prefix',g:repl_cd_prefix)
     let l:suffix = get(b:,'repl_cd_suffix',g:repl_cd_suffix)
@@ -199,10 +199,10 @@ function REPLCd(dir,count,global)
     let l:prefix = g:repl_cd_prefix
     let l:suffix = g:repl_cd_suffix
   end
-  call REPLSendText(l:prefix . a:dir . l:suffix,a:count)
+  call s:REPLSendText(l:prefix . a:dir . l:suffix,a:count)
 endfunction
 
-function REPLRun(file,count,global)
+function s:REPLRun(file,count,global)
   if !a:global
     let l:prefix = get(b:,'repl_run_prefix',g:repl_run_prefix)
     let l:suffix = get(b:,'repl_run_suffix',g:repl_run_suffix)
@@ -210,10 +210,10 @@ function REPLRun(file,count,global)
     let l:prefix = g:repl_run_prefix
     let l:suffix = g:repl_run_suffix
   end
-  call REPLSendText(l:prefix . a:file . l:suffix,a:count)
+  call s:REPLSendText(l:prefix . a:file . l:suffix,a:count)
 endfunction
 
-function REPLSendTextOp(opfunc)
+function s:REPLSendTextOp(opfunc)
   let l:old_register = @@
   if a:opfunc ==# 'line'
     normal! '[V']y']j
@@ -223,11 +223,11 @@ function REPLSendTextOp(opfunc)
     return
   endif
 
-  call REPLSendText(@@,g:REPL_count_holder,1)
+  call s:REPLSendText(@@,g:REPL_count_holder,1)
   let @@ = l:old_register
 endfunction
 
-function REPLResize(size)
+function s:REPLResize(size)
   let l:curwin = win_getid()
   for i in range(1,bufnr('$'))
     if !empty(matchstr(bufname(i),'repl:.\+'))
@@ -240,7 +240,7 @@ function REPLResize(size)
   call win_gotoid(l:curwin)
 endfunction
 
-function REPLCloseAll()
+function s:REPLCloseAll()
   for i in range(1,bufnr('$'))
     if !empty(matchstr(bufname(i),'repl:.\+'))
       echom "Closing " . bufname(i)
@@ -249,28 +249,28 @@ function REPLCloseAll()
   endfor
 endfunction
       
-command! -nargs=* -complete=shellcmd REPL :call REPLToggle(<f-args>)
-command! -nargs=0 REPLCloseAll :call REPLCloseAll()
+command! -nargs=* -complete=shellcmd REPL :call <SID>REPLToggle(<f-args>)
+command! -nargs=0 REPLCloseAll :call <SID>REPLCloseAll()
 nnoremap <silent><Plug>(repl-send-motion)
       \ :<C-u>let g:REPL_count_holder=v:count<cr>
-      \ :set operatorfunc=REPLSendTextOp<cr>g@
+      \ :set operatorfunc=<SID>REPLSendTextOp<cr>g@
 nnoremap <silent><Plug>(repl-send-text) 
-      \ :<C-u>call REPLSendText(getline('.'),v:count,1)<cr>j
+      \ :<C-u>call <SID>REPLSendText(getline('.'),v:count,1)<cr>j
 vnoremap <silent><Plug>(repl-send-text) 
-      \ mr"ty:call REPLSendText(@t,v:count,1)<cr>`r
-nnoremap <silent><Plug>(repl-toggle) :<C-u>call REPLToggle(v:count)<cr>
+      \ mr"ty:call <SID>REPLSendText(@t,v:count,1)<cr>`r
+nnoremap <silent><Plug>(repl-toggle) :<C-u>call <SID>REPLToggle(v:count)<cr>
 nnoremap <silent><Plug>(repl-cd) 
-      \ :<C-u>call REPLCd(expand('%:p:h'),v:count,0)<cr>
+      \ :<C-u>call <SID>REPLCd(expand('%:p:h'),v:count,0)<cr>
 nnoremap <silent><Plug>(repl-global-cd) 
-      \ :<C-u>call REPLCd(expand('%:p:h'),v:count,1)<cr>
+      \ :<C-u>call <SID>REPLCd(expand('%:p:h'),v:count,1)<cr>
 nnoremap <silent><Plug>(repl-run) 
-      \ :<C-u>call REPLRun(resolve(expand('%:p')),v:count,0)<cr>
+      \ :<C-u>call <SID>REPLRun(resolve(expand('%:p')),v:count,0)<cr>
 nnoremap <silent><Plug>(repl-resize) 
-      \ :<C-u>call REPLResize(v:count > 0 ? v:count : g:repl_size)<cr>
+      \ :<C-u>call <SID>REPLResize(v:count > 0 ? v:count : g:repl_size)<cr>
 
-tnoremap <silent><Plug>(repl-toggle) <C-w>:call REPLToggle(0)<cr>
-tnoremap <silent><Plug>(repl-switch) <C-w>:call REPLSwitch()<cr>
-tnoremap <silent><Plug>(repl-resize) <C-w>:call REPLResize(g:repl_size)<cr>
+tnoremap <silent><Plug>(repl-toggle) <C-w>:call <SID>REPLToggle(0)<cr>
+tnoremap <silent><Plug>(repl-switch) <C-w>:call <SID>REPLSwitch()<cr>
+tnoremap <silent><Plug>(repl-resize) <C-w>:call <SID>REPLResize(g:repl_size)<cr>
 
 if g:repl_default_mappings == 1
   nmap <C-w>' <Plug>(repl-toggle)
