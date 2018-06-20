@@ -350,8 +350,8 @@ nnoremap <silent><Plug>(repl-resize)
 
 if has('nvim')
   tnoremap <silent><Plug>(repl-toggle) <C-\><C-n>:call <SID>REPLToggle(0)<cr>
-  tnoremap <silent><Plug>(repl-switch) <C-\><C-n>:call <SID>REPLSwitch()<cr>
-  tnoremap <silent><Plug>(repl-resize) <C-\><C-n>:call <SID>REPLResize(g:repl_size)<cr>
+  tnoremap <silent><Plug>(repl-switch) <C-\><C-n>:call <SID>REPLSwitch()<cr>a
+  tnoremap <silent><Plug>(repl-resize) <C-\><C-n>:call <SID>REPLResize(g:repl_size)<cr>a
 else
   tnoremap <silent><Plug>(repl-toggle) <C-w>:call <SID>REPLToggle(0)<cr>
   tnoremap <silent><Plug>(repl-switch) <C-w>:call <SID>REPLSwitch()<cr>
@@ -382,7 +382,7 @@ if g:repl_default_mappings == 1
 
   tmap <C-w>g <Plug>(repl-switch)
   if has('nvim')
-    tmap <C-w><C-u> <C-\><C-n><C-u>:set nonumber<cr>
+    tmap <silent> <C-w><C-u> <C-\><C-n><C-u>:set nonumber<cr>
   else
     tmap <C-w><C-u> <C-w>N<C-u>:set nonumber<cr>
   end
