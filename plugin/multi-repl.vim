@@ -94,6 +94,7 @@ function s:REPLShow(count,program,start_only)
     if empty(l:repl)
       execute ":" . g:repl_position . " new"
       execute ":resize " . g:repl_size
+      set winfixheight
 
       let l:repl_id = termopen(a:program . ";#" . l:key,{"cwd": l:dir})
       let l:repl = bufname("%")
@@ -129,6 +130,7 @@ function s:REPLShow(count,program,start_only)
       call setbufvar(bufnr(l:repl),'&buflisted',0)
     endif
     execute ":resize " . g:repl_size
+    set winfixheight
   end
 
   return l:repl
