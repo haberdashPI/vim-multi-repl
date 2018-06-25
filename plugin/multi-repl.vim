@@ -36,12 +36,12 @@ function s:REPLName(count)
   let b:last_repl_count = l:count
   let l:projdir = projectroot#get(expand('%'))
   if len(l:projdir) > 0
-    echo "projdir: ".l:projdir
-    let l:name = "repl:" . fnamemodify(l:projdir,':t') . ":" . &filetype
+    echo 'projdir:' .l:projdir
+    let l:name = 'repl:' . fnamemodify(l:projdir,':t') . ':' . &filetype
   elseif !empty(&filetype)
-    let l:name = "repl:" . &filetype
+    let l:name = 'repl:' . &filetype
   else
-    let l:name = "repl:none"
+    let l:name = 'repl:none'
   endif
   if l:count > 1
     return l:name . ':' . l:count
@@ -58,9 +58,9 @@ end
 
 function s:REPLFindTerm(name)
   if has('nvim')
-    for i in range(1,bufnr('$'))
-      if bufname(i) =~ 'term:.*' . a:name . '$'
-        return bufname(i)
+    for l:i in range(1,bufnr('$'))
+      if bufname(l:i) =~ 'term:.*' . a:name . '$'
+        return bufname(l:i)
       end
     endfor
     return ''
@@ -77,11 +77,11 @@ endfunction
 function s:REPLShow(count,program,start_only)
   " hide any other visible REPLs
   let l:cur_window = win_getid()
-  for i in range(1,bufnr('$'))
-    if bufname(i) =~ g:REPL_pattern
-      for w in win_findbuf(i)
-        call win_gotoid(w)
-        execute ":hide"
+  for l:i in range(1,bufnr('$'))
+    if bufname(l:i) =~ g:REPL_pattern
+      for l:w in win_findbuf(l:i)
+        call win_gotoid(l:w)
+        execute ':hide'
       endfor
     endif
   endfor
@@ -92,21 +92,21 @@ function s:REPLShow(count,program,start_only)
     let l:key = s:REPLName(a:count)
     let l:repl = s:REPLFindTerm(l:key)
     if empty(l:repl)
-      execute ":" . g:repl_position . " new"
-      execute ":resize " . g:repl_size
+      execute ':' . g:repl_position . ' new'
+      execute ':resize ' . g:repl_size
       set winfixheight
 
-      let l:repl_id = termopen(a:program . ";#" . l:key,{"cwd": l:dir})
-      let l:repl = bufname("%")
+      let l:repl_id = termopen(a:program . ';#' . l:key,{'cwd': l:dir})
+      let l:repl = bufname('%')
       call setbufvar(l:repl,'REPL_jobid',l:repl_id)
       call setbufvar(l:repl,'&buflisted',0)
     elseif a:start_only
-      echoer "Cannot start, already running a REPL."
+      echoer 'Cannot start, already running a REPL.'
     else
       if empty(win_findbuf(bufnr(l:repl)))
-        execute ":noautocmd " . g:repl_position . " split " . 
+        execute ':noautocmd '  . g:repl_position . ' split ' . 
               \substitute(l:repl,'\#','\\#','g')
-        execute ":noautocmd resize " . g:repl_size
+        execute ':noautocmd resize ' . g:repl_size
         call setbufvar(bufnr(l:repl),'&buflisted',0)
       end
     end
@@ -114,22 +114,22 @@ function s:REPLShow(count,program,start_only)
     let l:repl = s:REPLName(a:count)
     if bufnr(l:repl) == -1
       call term_start(a:program,{ 
-            \ "cwd": l:dir,
-            \ "hidden": 1,
-            \ "norestore": 1,
-            \ "term_name": l:repl,
-            \ "term_kill":  "term",
-            \ "term_finish": "close"
+            \ 'cwd': l:dir,
+            \ 'hidden': 1,
+            \ 'norestore': 1,
+            \ 'term_name': l:repl,
+            \ 'term_kill':  'term',
+            \ 'term_finish': 'close'
             \ })
     elseif a:start_only
-      echoer "Cannot start, already running a REPL."
+      echoer 'Cannot start, already running a REPL.'
     end
 
     if empty(win_findbuf(bufnr(l:repl)))
-      execute ":" . g:repl_position . " sb" . bufnr(l:repl)
+      execute ':' . g:repl_position . ' sb' . bufnr(l:repl)
       call setbufvar(bufnr(l:repl),'&buflisted',0)
     endif
-    execute ":resize " . g:repl_size
+    execute ':resize ' . g:repl_size
     set winfixheight
   end
 
@@ -144,7 +144,7 @@ function s:REPLToggle(...)
     if a:1 =~# '^\d\+$'
       let l:count = a:1
       if a:0 > 1
-        let l:program = join(a:000[1:-1]," ")
+        let l:program = join(a:000[1:-1],' ')
         let l:custom_start = 1
       else
         let l:program = get(b:,'repl_program',g:repl_program)
@@ -152,7 +152,7 @@ function s:REPLToggle(...)
       end
     else
       let l:count = 0
-      let l:program = join(a:000[0:-1]," ")
+      let l:program = join(a:000[0:-1],' ')
       let l:custom_start = 1
     end
   else
@@ -163,7 +163,7 @@ function s:REPLToggle(...)
   " echom 'Count'  . l:count
 
   let l:use_shell = a:0 > 0 ? a:1 : 0
-  let l:buf = bufname("%")
+  let l:buf = bufname('%')
   if empty(matchstr(l:buf,g:REPL_pattern))
     let l:repl = s:REPLShow(l:count,l:program,l:custom_start)
     call win_gotoid(win_findbuf(bufnr(l:repl))[0])
@@ -180,8 +180,8 @@ function s:REPLToggle(...)
         " try to find a window with a buffer of the same filetype as that
         " supported by the repl 
         let l:filetype = s:REPLFileType(l:buf)
-        for i in range(1,bufnr('$'))
-          if getbufvar(i,'&filetype') ==# l:filetype
+        for l:i in range(1,bufnr('$'))
+          if getbufvar(l:i,'&filetype') ==# l:filetype
             let l:windows = win_findbuf(bufnr(l:gotowin))
             if !empty(l:windows)
               call win_gotoid(l:windows[0])
@@ -206,7 +206,7 @@ function s:REPLSendText(text,count,...)
   let l:eventignore = &eventignore 
   let &eventignore = 'all'
 
-  let l:buf = bufname("%")
+  let l:buf = bufname('%')
   let l:mode = mode()
   let l:win = win_getid()
   let l:delay = get(b:,'repl_send_text_delay',g:repl_send_text_delay)
@@ -214,7 +214,7 @@ function s:REPLSendText(text,count,...)
   let l:prefix = get(b:,'repl_send_prefix',g:repl_send_prefix)
   let l:suffix = get(b:,'repl_send_suffix',g:repl_send_suffix)
   if !empty(matchstr(l:buf,g:REPL_pattern))
-    echoer "Tried to send text to REPL while already in the REPL."
+    echoer 'Tried to send text to REPL while already in the REPL.'
   else
     " echom 'Count'  . a:count
     let l:repl = s:REPLShow(a:count,get(b:,'repl_program',g:repl_program),0)
@@ -300,11 +300,11 @@ function s:REPLResize(size)
   let &eventignore = 'all'
 
   let l:curwin = win_getid()
-  for i in range(1,bufnr('$'))
-    if !empty(matchstr(bufname(i),g:REPL_pattern))
-      for w in win_findbuf(i)
-        call win_gotoid(w)
-        execute ":resize " . a:size
+  for l:i in range(1,bufnr('$'))
+    if !empty(matchstr(bufname(l:i),g:REPL_pattern))
+      for l:w in win_findbuf(l:i)
+        call win_gotoid(l:w)
+        execute ':resize'  . a:size
       endfor
     endif
   endfor
@@ -313,17 +313,17 @@ function s:REPLResize(size)
 endfunction
 
 function s:REPLCloseAll()
-  for i in range(1,bufnr('$'))
-    if !empty(matchstr(bufname(i),g:REPL_pattern))
-      execute ":bw! " . bufname(i)
+  for l:i in range(1,bufnr('$'))
+    if !empty(matchstr(bufname(l:i),g:REPL_pattern))
+      execute ':bw!'  . bufname(l:i)
     endif
   endfor
 endfunction
 
 function s:REPLListAll()
-  for i in range(1,bufnr('$'))
-    if !empty(matchstr(bufname(i),g:REPL_pattern))
-      echom bufname(i)
+  for l:i in range(1,bufnr('$'))
+    if !empty(matchstr(bufname(l:i),g:REPL_pattern))
+      echom bufname(l:i)
     endif
   endfor
 endfunction
