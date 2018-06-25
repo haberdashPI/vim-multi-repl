@@ -3,15 +3,13 @@
 " Version: 0.4.0
 " Licesnse: MIT
 
-" TODO: remove all !'s from functions and
-" uncomment the below lines
-if &cp || exists('loaded_vimrepl')
+if &compatible || exists('loaded_vimmultirepl')
   finish
 endif
-let loaded_vimrepl = 1
+let g:loaded_vimmultirepl = 1
 
-if version < 800 && !has('nvim')
-  echoer "vim-repl requires Vim 8 or neovim"
+if v:version < 800 && !has('nvim')
+  echoer 'vim-multi-repl requires Vim 8 or neovim'
   finish
 end
 
