@@ -419,7 +419,7 @@ augroup REPLConfiguration
 
   au FileType python let b:repl_program='ipython'
   au FileType python let b:repl_cd_prefix='%cd '
-  au FileType python let b:repl_run_prefix='%run '
+  au FileType python let b:repl_run_prefix='%run "'
   au FileType python let b:repl_send_text_delay='250m'
   au FileType python let b:repl_send_prefix="%cpaste\n"
   au FileType python let b:repl_send_suffix="\n--\n"
