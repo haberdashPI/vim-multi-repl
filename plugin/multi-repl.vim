@@ -23,12 +23,23 @@ let g:repl_run_suffix = get(g:,'repl_run_suffix','"')
 let g:repl_send_prefix = get(g:,'repl_send_prefix','')
 let g:repl_send_suffix = get(g:,'repl_send_suffix','')
 let g:repl_send_text_delay = get(g:,'repl_send_text_delay','0m')
+let g:repl_path_fix = get(g:,'repl_path_fix','')
+let g:repl_path_fix_with = get(g:,'repl_path_fix-with','')
 
 if has('win32')
   let g:repl_program = get(g:,'repl_program','sh.exe')
 else
   let g:repl_program = get(g:,'repl_program','sh')
 end
+
+" fix the path using custom transformations if necessary
+function s:FixPath(path)
+  if !empty(g:repl_path_fix)
+    return substitute(a:path,g:repl_path_fix,g:repl_path_fix_with,'')
+  else
+    return a:path
+  end
+endfunction
 
 " choose a project and filetype specific name for the terminal
 function s:REPLName(count)
@@ -74,7 +85,7 @@ function s:REPLFileType(name)
 endfunction
 
 " show the terminal, creating it if necessary
-function s:REPLShow(count,program,start_only)
+function s:REPLShow(count,program,custom_start)
   " hide any other visible REPLs
   let l:cur_window = win_getid()
   for l:i in range(1,bufnr('$'))
@@ -87,7 +98,7 @@ function s:REPLShow(count,program,start_only)
   endfor
   call win_gotoid(l:cur_window)
 
-  let l:dir = resolve(expand('%:p:h'))
+  let l:dir = s:FixPath(resolve(expand('%:p:h')))
   if has('nvim')
     let l:key = s:REPLName(a:count)
     let l:repl = s:REPLFindTerm(l:key)
@@ -100,7 +111,7 @@ function s:REPLShow(count,program,start_only)
       let l:repl = bufname('%')
       call setbufvar(l:repl,'REPL_jobid',l:repl_id)
       call setbufvar(l:repl,'&buflisted',0)
-    elseif a:start_only
+    elseif a:custom_start
       echoer 'Cannot start, already running a REPL.'
     else
       if empty(win_findbuf(bufnr(l:repl)))
@@ -121,7 +132,7 @@ function s:REPLShow(count,program,start_only)
             \ 'term_kill':  'term',
             \ 'term_finish': 'close'
             \ })
-    elseif a:start_only
+    elseif a:custom_start
       echoer 'Cannot start, already running a REPL.'
     end
 
@@ -196,6 +207,10 @@ endfunction
 
 function s:REPLSwitch()
   let l:num = nr2char(getchar())
+  if has('nvim')
+    let l:num = nr2char(getchar())
+  endif
+
   call s:REPLToggle(0)
   call s:REPLToggle(l:num)
 endfunction
@@ -340,11 +355,11 @@ vnoremap <silent><Plug>(repl-send-text) :<C-u>let g:REPL_count_holder=v:count<cr
       \gvmr"ty:call <SID>REPLSendText(@t,g:REPL_count_holder,1)<cr>`r
 nnoremap <silent><Plug>(repl-toggle) :<C-u>call <SID>REPLToggle(v:count)<cr>
 nnoremap <silent><Plug>(repl-cd) 
-      \ :<C-u>call <SID>REPLCd(expand('%:p:h'),v:count,0)<cr>
+      \ :<C-u>call <SID>REPLCd(<SID>FixPath(expand('%:p:h')),v:count,0)<cr>
 nnoremap <silent><Plug>(repl-global-cd) 
-      \ :<C-u>call <SID>REPLCd(expand('%:p:h'),v:count,1)<cr>
+      \ :<C-u>call <SID>REPLCd(<SID>FixPath(expand('%:p:h')),v:count,1)<cr>
 nnoremap <silent><Plug>(repl-run) 
-      \ :<C-u>call <SID>REPLRun(resolve(expand('%:p')),v:count,0)<cr>
+      \ :<C-u>call <SID>REPLRun(<SID>FixPath(resolve(expand('%:p'))),v:count,0)<cr>
 nnoremap <silent><Plug>(repl-resize) 
       \ :<C-u>call <SID>REPLResize(v:count > 0 ? v:count : g:repl_size)<cr>
 
