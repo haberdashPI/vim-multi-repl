@@ -24,7 +24,7 @@ let g:repl_send_prefix = get(g:,'repl_send_prefix','')
 let g:repl_send_suffix = get(g:,'repl_send_suffix','')
 let g:repl_send_text_delay = get(g:,'repl_send_text_delay','0m')
 let g:repl_path_fix = get(g:,'repl_path_fix','')
-let g:repl_path_fix_with = get(g:,'repl_path_fix-with','')
+let g:repl_path_fix_with = get(g:,'repl_path_fix_with','')
 
 if has('win32')
   let g:repl_program = get(g:,'repl_program','sh.exe')
@@ -35,7 +35,9 @@ end
 " fix the path using custom transformations if necessary
 function s:FixPath(path)
   if !empty(g:repl_path_fix)
-    return substitute(a:path,g:repl_path_fix,g:repl_path_fix_with,'')
+    if a:path =~# g:repl_path_fix
+      return substitute(a:path,g:repl_path_fix,g:repl_path_fix_with,'')
+    endif
   else
     return a:path
   end
