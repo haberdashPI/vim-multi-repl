@@ -377,6 +377,9 @@ if g:repl_default_mappings == 1
   nmap <C-w>' <Plug>(repl-toggle)
   vmap <C-w>' <Plug>(repl-toggle)
   tmap <C-w>' <Plug>(repl-toggle)
+  nmap <C-w><C-'> <Plug>(repl-toggle)
+  vmap <C-w><C-'> <Plug>(repl-toggle)
+  tmap <C-w><C-'> <Plug>(repl-toggle)
 
   nmap <Leader>= <Plug>(repl-resize)
   vmap <Leader>= <Plug>(repl-resize)
@@ -433,7 +436,7 @@ augroup REPLConfiguration
   au FileType matlab let b:repl_run_suffix=''')'
 
   au FileType python let b:repl_program='ipython'
-  au FileType python let b:repl_cd_prefix='%cd '
+  au FileType python let b:repl_cd_prefix='%cd "'
   au FileType python let b:repl_run_prefix='%run "'
   au FileType python let b:repl_send_text_delay='250m'
   au FileType python let b:repl_send_prefix="%cpaste\n"
