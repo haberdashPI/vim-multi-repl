@@ -1,6 +1,6 @@
 " multi-repl.vim - frictionaless REPL interaction
 " Maintainer: David F. Little <david.frank.little@gmail.com>
-" Version: 0.4.0
+" Version: 0.4.1
 " Licesnse: MIT
 
 if &compatible || exists('loaded_vimmultirepl')
