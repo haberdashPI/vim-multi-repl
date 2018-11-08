@@ -180,7 +180,9 @@ function s:REPLToggle(...)
   if empty(matchstr(l:buf,g:REPL_pattern))
     let l:repl = s:REPLShow(l:count,l:program,l:custom_start)
     call win_gotoid(win_findbuf(bufnr(l:repl))[0])
-    normal! a
+    if has('nvim')
+      normal! a
+    endif
     let b:opened_from = l:buf
   elseif !l:custom_start
     let l:gotowin = get(b:,'opened_from','')
